@@ -1,0 +1,29 @@
+---
+alwaysApply: true
+---
+
+# Plans Rule
+
+## Context
+- Implementation plans created during development sessions should be persisted for future reference.
+- Plans are stored in the `lukashian-dart/plans/` directory.
+
+## Requirements
+
+1. **Save Plans**: When creating an implementation plan for a task, save it to `lukashian-dart/plans/` with the naming convention `plan_<descriptive_name>.md`.
+
+2. **Plan Format**: Plans should include:
+   - Title and objective
+   - Current state analysis
+   - Implementation approach with specific steps
+   - Files to create/modify
+   - Testing strategy
+   - Implementation status (update when completed)
+
+3. **Update Status**: When a plan is implemented, update the plan file to reflect completion status and list the actual files created/modified.
+
+## Trigger
+- This rule applies when:
+  - User requests a plan for implementing a feature
+  - A complex multi-step task requires planning
+  - User explicitly asks to save or create a plan

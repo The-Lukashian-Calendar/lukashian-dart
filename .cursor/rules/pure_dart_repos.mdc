@@ -1,0 +1,32 @@
+---
+description: Pure Dart repos (lukashian-dart) — no Flutter packages or SDK
+globs: lukashian-dart/**
+alwaysApply: false
+---
+# Pure Dart Repositories — No Flutter
+
+## Context
+- **lukashian-dart** is a **pure Dart** packages (no Flutter).
+- They must remain runnable with `dart test`, `dart run`, and the Dart SDK only.
+- Do not introduce Flutter or Flutter-only packages in these repos.
+
+## When This Applies
+This rule applies when editing or adding code in the **lukashian-dart** repository.
+
+## Requirements
+
+1. **No Flutter SDK dependency**
+   - Do not add `sdk: flutter` or `flutter:` sections to `pubspec.yaml` in lukashian-dart.
+   - Do not add `flutter_test`, `flutter`, or any `package:flutter*` dependency.
+
+2. **No Flutter imports in code**
+   - Do not use `package:flutter_test/flutter_test.dart` or `package:flutter/...`.
+   - Do not use Flutter bindings (e.g. `TestWidgetsFlutterBinding.ensureInitialized()`).
+   - Use `package:test/test.dart` for tests; use Dart VM / file-based loading where assets are needed.
+
+3. **Tests**
+   - Tests must run with `dart test` from the package root.
+
+## Allowed
+- `package:test`
+- Pure Dart packages (no Flutter SDK dependency)

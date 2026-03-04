@@ -1,0 +1,208 @@
+---
+description: 
+globs: *.dart
+alwaysApply: false
+---
+# Dart Common Rules
+
+## Style
+- Line Length: 80
+- Prefer Const: true
+- Use Named Parameters: true
+- Documentation: true
+- Use Null Safety: true
+- Use Null Aware Operators: true
+- Use Collection Literals: true
+- Use super parameters
+- Prefer single quotes for strings
+- Prefer using string interpolation to compose strings and values
+- Documentation should be added to the 'docs' folder
+- Don't nest function definitions, always create methods at the class level
+
+## Class member order
+
+Apply this order when **creating a new class** or when the user **specifically requests** it (e.g. “follow class member order”, “reorder members”). Do not reorder existing members solely to satisfy this rule when doing other edits.
+
+Within a Dart class, members must appear in this order:
+
+1. **Static members** — static constants, static properties, static methods
+2. **Public instance properties** — public fields and getters/setters (no leading `_`)
+3. **Private instance properties** — private fields and getters/setters (leading `_`)
+4. **Constructors** — default, named, then factory constructors
+5. **Public methods** — instance methods (no leading `_`). In Flutter `StatelessWidget` or `State` subclasses, put `build` first among public methods
+6. **Private methods** — instance methods (leading `_`)
+
+Within each group, keep a consistent order (e.g. alphabetical or by logical dependency).
+
+## Common Excluded Files
+- `**/*.g.dart`
+- `**/*.freezed.dart`
+- `**/*.mocks.dart`
+- `**/build/**`
+- `**/assets/**`
+
+## Generation
+- Add Documentation: true
+- Add Tests: true
+- Add Null Safety: true
+
+## Review
+- Check Null Safety: true
+- Suggest Improvements: true
+- Maintain Immutability: true
+
+## Implementation Guidelines
+
+When implementing changes, always adhere to these principles:
+
+1. **Stick to Explicit Requirements**
+   - Implement only what is specifically requested
+   - Do not add extra functionality without approval
+   - Do not make assumptions, ask for clarifications if needed
+   - When uncertain about implementation details, ask for clarification
+
+2. **Respect Existing Architecture**
+   - Assume that existing constraints (like foreign keys) are intentional
+   - Do not modify working code that isn't part of the change request
+   - Research the current implementation before proposing changes
+   - If something does not look correct raise this as an issue for discussion
+
+3. **Avoid Assumption-Driven Development**
+   - Never assume what might be needed in the future
+   - If you spot additional needs beyond the specified requirements raise these for discussion
+   - For complex changes, outline your approach first for confirmation
+
+4. **Maintain Focus**
+   - Complete the requested task without adding tangential improvements
+   - When finding issues outside the scope of work, note them separately
+   - Quality over quantity: well-implemented specific changes are better than broad, unnecessary modifications
+
+5. **Plan and then Seek Approval before Implementing**
+   - Develop a plan for complex multi-file changes
+   - Clearly identify and include any optional elements in the plan
+   - Always seek approval before proceeding to implementation
+
+6. **During Implementation**
+   - If unexpected issues arise that require multi-file edits to resolve (e.g. ambiguities arising from extension clashes), pause and seek approval before continuing
+   
+
+# Workspace Navigation Rules
+
+## The Problem This Solves
+Prevent losing directory context when switching from file editing to command execution in multi-repo workspaces.
+
+## Multi-Repo Structure
+This workspace contains these repositories:
+```
+workspace_root/
+├── lukashian-dart/  # Pure dart package
+├── lukashian/       # Java reference implementation
+├── .devcontainer    # Development target container (linux)
+└── lukashian.code-workspace  # Multi-root workspace indicator
+```
+
+**Pure Dart repos (lukashian-dart):** Do not add or use Flutter packages (e.g. `flutter_test`), Flutter SDK, or `package:flutter` imports. Tests must run with `dart test`. See **pure_dart_repos.mdc** for the full rule.
+## MANDATORY: Context Verification Before Commands
+
+### 1. Always Check Location Before Operations
+Before running ANY command (tests, builds, etc.), ALWAYS:
+
+```bash
+# Step 1: Verify current directory
+pwd
+
+# Step 2: Confirm you're in the correct repo
+ls -la | grep -E "(pubspec.yaml|README.md)" 
+
+# Step 3: For test commands, verify test directory exists
+ls -la test/ 2>/dev/null || echo "No test directory in current location"
+```
+
+### 2. Repository Detection Patterns
+When file paths suggest a specific repo:
+- `lukashian-dart/lib/src/` or `lukashian-dart/test/` → Navigate to lukashian-dart directory
+- `lukashian/src/` or `lukashian/` → Navigate to lukashian directory  
+
+### 3. Standard Navigation Commands
+```bash
+# Navigate to specific repo: replace ROOT with the path to the workspace root and replace REPO with lukashian-dart, lukashian, etc.)
+cd ROOT/REPO
+pwd  # Always verify after navigation
+
+# Check if you're in workspace root
+ls -la *.code-workspace 2>/dev/null && echo "In workspace root" || echo "Not in workspace root"
+
+# Find which repo contains a specific file
+find /Users/chris/dev/lukashian -name "specific_file.dart" -type f 2>/dev/null | head -5
+```
+
+## Command Execution Workflow
+
+### Testing Commands
+```bash
+# WRONG: Assuming you're in the right place
+dart test test/some_test.dart
+
+# RIGHT: Verify location first
+pwd
+ls -la test/ || (echo "No test directory found" && exit 1)
+dart test test/some_test.dart
+```
+
+### Build Commands  
+```bash
+# WRONG: Running without context
+flutter build
+
+# RIGHT: Verify Dart project first
+pwd
+ls -la pubspec.yaml | grep flutter || (echo "Not a Flutter project" && exit 1)  
+flutter build
+```
+
+## Error Recovery Patterns
+
+### When Commands Fail Due to Location
+1. **Check where you are**: `pwd`
+2. **List available directories**: `ls -la`
+3. **Navigate to workspace root**: `cd /Users/chris/dev/lukashian`
+4. **List available repos**: `ls -la`
+5. **Navigate to correct repo**: `cd CORRECT_REPO`
+6. **Verify you're in right place**: `pwd && ls -la`
+7. **Retry the command**
+
+### When Files Seem Missing
+```bash
+# Don't assume - search for them
+find /Users/chris/dev/lukashian -name "missing_file.*" -type f 2>/dev/null
+
+# Or check if you're in the wrong repo
+ls -la ../*/path/to/file 2>/dev/null
+```
+
+## CRITICAL RULE: File Context ≠ Command Context
+
+**Having file contents in conversation context does NOT mean you're in the correct directory for commands.**
+
+Always treat command execution as a separate step requiring explicit directory verification.
+
+## Quick Reference Commands
+```bash
+# Where am I?
+pwd
+
+# What repos are available?  
+cd /Users/chris/dev/lukashian && ls -la
+
+# Navigate to specific repo
+cd /Users/chris/dev/lukashian/REPO_NAME
+
+# Verify I'm in a Dart project
+ls -la pubspec.yaml
+
+# Verify test directory exists
+ls -la test/
+
+# Run tests (only after verification)
+dart test [specific_test_file]
+```
