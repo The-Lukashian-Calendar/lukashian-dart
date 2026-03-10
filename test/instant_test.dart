@@ -11,14 +11,27 @@ import 'package:test/test.dart';
 import 'helpers/lukashian_assert.dart';
 import 'helpers/test_millisecond_store_data_provider.dart';
 
+const int _toCalendarSourceKey = testCalendarKey + 1;
+const int _toCalendarTargetKey = testCalendarKey + 2;
+
 void main() {
   setUpAll(() async {
     final store = MillisecondStore.store();
     store.registerProvider(testCalendarKey, TestMillisecondStoreDataProvider());
     store.registerProvider(CalendarKeys.earth, TestMillisecondStoreDataProvider());
+    store.registerProvider(
+      _toCalendarSourceKey,
+      ConstantOffsetTestProvider(0),
+    );
+    store.registerProvider(
+      _toCalendarTargetKey,
+      ConstantOffsetTestProvider(1000),
+    );
     store.setDefaultCalendarKey(testCalendarKey);
     await store.ensureLoaded(testCalendarKey);
     await store.ensureLoaded(CalendarKeys.earth);
+    await store.ensureLoaded(_toCalendarSourceKey);
+    await store.ensureLoaded(_toCalendarTargetKey);
   });
 
   group('LukashianInstant', () {
@@ -180,6 +193,16 @@ void main() {
       );
     });
 
+    test('testToCalendar', () {
+      final instant = LukashianInstant.ofEpoch(450, _toCalendarSourceKey);
+      final converted = instant.toCalendar(_toCalendarTargetKey);
+      expect(
+        converted.getEpochMilliseconds() - instant.getEpochMilliseconds(),
+        1000,
+      );
+      expect(converted.getCalendarKey(), _toCalendarTargetKey);
+    });
+
     test('testDifferenceWith', () {
       expect(LukashianInstant.ofEpoch(1, testCalendarKey).differenceWith(LukashianInstant.ofEpoch(1, testCalendarKey)), 0);
       expect(LukashianInstant.ofEpoch(1, testCalendarKey).differenceWith(LukashianInstant.ofEpoch(4, testCalendarKey)), -3);
@@ -255,3 +278,4 @@ void main() {
     });
   });
 }
+

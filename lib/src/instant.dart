@@ -160,7 +160,12 @@ final class LukashianInstant extends CalendarObject implements Comparable<Lukash
 
   DateTime toDateTime() => DateTime.fromMillisecondsSinceEpoch(getUnixEpochMilliseconds(), isUtc: true);
 
-  LukashianInstant toCalendar(int calendarKey) => LukashianInstant.ofUnixEpochMilliseconds(getUnixEpochMilliseconds(), calendarKey);
+  LukashianInstant toCalendar(int calendarKey) {
+    final offset = MillisecondStore.store().data(this.calendarKey).getUnixEpochOffsetMilliseconds();
+    final otherOffset = MillisecondStore.store().data(calendarKey).getUnixEpochOffsetMilliseconds();
+    final difference = offset - otherOffset;
+    return LukashianInstant.ofEpoch(getEpochMilliseconds() - difference, calendarKey);
+  }
 
   int differenceWith(LukashianInstant other) {
     checkSameKeyAs(other);

@@ -61,6 +61,11 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
       if (bytes.isEmpty) {
         throw Exception("No bytes could be loaded from '$baseLocation$extension'");
       }
+      if (bytes.length % 8 != 0) {
+        throw ArgumentError(
+          'Number of bytes is not a multiple of 8, which is required for reading long values',
+        );
+      }
       return _decodeLongs(bytes);
     } catch (e, st) {
       Error.throwWithStackTrace(

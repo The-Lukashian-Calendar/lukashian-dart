@@ -70,8 +70,11 @@ final class MillisecondStore {
   }
 
   /// Registers a provider. Do not overwrite standard [CalendarKeys] values.
+  /// Registering a provider under a key also clears any cached data for that key.
   void registerProvider(int key, MillisecondStoreDataProvider provider) {
     _providers[key] = provider;
+    clearData(key);
+    _loading.remove(key);
   }
 
   /// Loads data for [calendarKey] from its provider if not already cached.

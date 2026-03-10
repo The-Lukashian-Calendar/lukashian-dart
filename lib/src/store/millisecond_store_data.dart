@@ -62,6 +62,9 @@ class MillisecondStoreData {
   final List<int> _dayEpochMilliseconds;
   final List<int> _unixTimestampsWithLeapSecond;
 
+  /// Offset between the UNIX epoch and the Lukashian epoch for this calendar.
+  int getUnixEpochOffsetMilliseconds() => _unixEpochOffsetMilliseconds;
+
   /// Milliseconds from UNIX epoch to the given Lukashian epoch milliseconds.
   int getUnixEpochMilliseconds(int lukashianEpochMilliseconds) {
     final unixEpochMilliseconds =
@@ -86,6 +89,10 @@ class MillisecondStoreData {
   /// Epoch milliseconds at the end of the given year (year 1-based).
   int getEpochMillisecondsForYear(int year) {
     LukashianException.check(
+      year >= 1,
+      () => '$year is not a valid year, the minimum is 1',
+    );
+    LukashianException.check(
       year <= _yearEpochMilliseconds.length,
       () => 'Year $year isn\'t supported yet by this Lukashian Calendar instance',
     );
@@ -94,6 +101,10 @@ class MillisecondStoreData {
 
   /// Epoch milliseconds at the end of the given epoch day (1-based).
   int getEpochMillisecondsForEpochDay(int epochDay) {
+    LukashianException.check(
+      epochDay >= 1,
+      () => '$epochDay is not a valid epoch day, the minimum is 1',
+    );
     LukashianException.check(
       epochDay <= _dayEpochMilliseconds.length,
       () => 'Epoch day $epochDay isn\'t supported yet by this Lukashian Calendar instance',
@@ -104,6 +115,10 @@ class MillisecondStoreData {
   /// Year (1-based) that contains the given epoch milliseconds.
   int getYearForEpochMilliseconds(int epochMilliseconds) {
     LukashianException.check(
+      epochMilliseconds >= 1,
+      () => '$epochMilliseconds is not valid, the minimum is 1',
+    );
+    LukashianException.check(
       epochMilliseconds <= _yearEpochMilliseconds.last,
       () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
     );
@@ -113,6 +128,10 @@ class MillisecondStoreData {
 
   /// Epoch day (1-based) that contains the given epoch milliseconds.
   int getEpochDayForEpochMilliseconds(int epochMilliseconds) {
+    LukashianException.check(
+      epochMilliseconds >= 1,
+      () => '$epochMilliseconds is not valid, the minimum is 1',
+    );
     LukashianException.check(
       epochMilliseconds <= _dayEpochMilliseconds.last,
       () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
