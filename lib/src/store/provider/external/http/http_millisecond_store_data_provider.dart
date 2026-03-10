@@ -11,21 +11,19 @@ import '../external_resource_millisecond_store_data_provider.dart';
 
 /// Loads epoch data from HTTP(S) URLs. Base URL should end with a path separator;
 /// extensions are appended as-is.
-class HttpMillisecondStoreDataProvider extends ExternalResourceMillisecondStoreDataProvider {
+class HttpMillisecondStoreDataProvider
+    extends ExternalResourceMillisecondStoreDataProvider {
   HttpMillisecondStoreDataProvider(
-    String baseUrl,
-    String unixEpochOffsetUrlExtension,
-    String yearEpochMillisecondsUrlExtension,
-    String dayEpochMillisecondsUrlExtension,
-  ) : super(
-          baseUrl,
-          unixEpochOffsetUrlExtension,
-          yearEpochMillisecondsUrlExtension,
-          dayEpochMillisecondsUrlExtension,
-        );
+    super.baseLocation,
+    super.unixEpochOffsetExtension,
+    super.yearEpochMillisecondsExtension,
+    super.dayEpochMillisecondsExtension,
+  );
 
-  HttpMillisecondStoreDataProvider.withDefaults(String baseUrl)
-      : super.withDefaults(baseUrl);
+  // note: cannot use super.baseLocation - would mix super parameter with positional super call.
+  // ignore: use_super_parameters
+  HttpMillisecondStoreDataProvider.withDefaults(String baseLocation)
+    : super.withDefaults(baseLocation);
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String url) async {

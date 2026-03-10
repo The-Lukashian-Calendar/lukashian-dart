@@ -10,21 +10,19 @@ import '../external_resource_millisecond_store_data_provider.dart';
 
 /// Loads epoch data from files. Base path should end with a path separator;
 /// extensions are appended as-is (e.g. "unixEpochOffset").
-class FileMillisecondStoreDataProvider extends ExternalResourceMillisecondStoreDataProvider {
+class FileMillisecondStoreDataProvider
+    extends ExternalResourceMillisecondStoreDataProvider {
   FileMillisecondStoreDataProvider(
-    String basePath,
-    String unixEpochOffsetPathExtension,
-    String yearEpochMillisecondsPathExtension,
-    String dayEpochMillisecondsPathExtension,
-  ) : super(
-          basePath,
-          unixEpochOffsetPathExtension,
-          yearEpochMillisecondsPathExtension,
-          dayEpochMillisecondsPathExtension,
-        );
+    super.baseLocation,
+    super.unixEpochOffsetExtension,
+    super.yearEpochMillisecondsExtension,
+    super.dayEpochMillisecondsExtension,
+  );
 
-  FileMillisecondStoreDataProvider.withDefaults(String basePath)
-      : super.withDefaults(basePath);
+  // note: cannot use super.baseLocation - would mix super parameter with positional super call.
+  // ignore: use_super_parameters
+  FileMillisecondStoreDataProvider.withDefaults(String baseLocation)
+    : super.withDefaults(baseLocation);
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String path) async {

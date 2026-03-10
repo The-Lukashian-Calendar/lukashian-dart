@@ -65,8 +65,6 @@ final class Formatter {
     String daySeparator = '-',
     String Function(Fraction)? formatter,
   }) {
-    return formatDay(instant.getDay(), dayFormat, daySeparator) +
-        ' ' +
-        formatProportion(instant.getProportionOfDay(), formatter);
+    return '${formatDay(instant.getDay(), dayFormat, daySeparator)} ${formatProportion(instant.getProportionOfDay(), formatter)}';
   }
 }
