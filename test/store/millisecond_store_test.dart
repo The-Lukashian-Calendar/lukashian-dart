@@ -85,6 +85,19 @@ void main() {
     store.data(testCalendarKey + 2);
     expect(counter, 3);
   });
+
+  test('concurrent ensureLoaded for same key deduplicates provider fetches', () async {
+    var loadCount = 0;
+    final provider = _DelayedCountingProvider(() => loadCount++);
+
+    store.registerProvider(testCalendarKey + 2, provider);
+
+    // Fire multiple concurrent ensureLoaded calls before any can complete.
+    final futures = List.generate(10, (_) => store.ensureLoaded(testCalendarKey + 2));
+    await Future.wait(futures);
+
+    expect(loadCount, 1);
+  });
 }
 
 class _CountingTestProvider extends TestMillisecondStoreDataProvider {
@@ -95,6 +108,21 @@ class _CountingTestProvider extends TestMillisecondStoreDataProvider {
   @override
   Future<int> loadUnixEpochOffsetMilliseconds() async {
     _onLoad();
+    return super.loadUnixEpochOffsetMilliseconds();
+  }
+}
+
+/// Provider that yields before loading so concurrent ensureLoaded callers can
+/// observe the in-flight future and await it instead of starting duplicate loads.
+class _DelayedCountingProvider extends TestMillisecondStoreDataProvider {
+  _DelayedCountingProvider(this._onLoad);
+
+  final void Function() _onLoad;
+
+  @override
+  Future<int> loadUnixEpochOffsetMilliseconds() async {
+    _onLoad();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
     return super.loadUnixEpochOffsetMilliseconds();
   }
 }

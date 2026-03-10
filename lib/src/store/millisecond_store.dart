@@ -43,6 +43,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import 'dart:async';
+
 import '../lukashian_exception.dart';
 import 'calendar_keys.dart';
 import 'millisecond_store_data.dart';
@@ -84,7 +86,8 @@ final class MillisecondStore {
       final provider = _providers[calendarKey];
       LukashianException.check(
         provider != null,
-        () => 'Please register provider for key $calendarKey before calling this method with key $calendarKey',
+        () =>
+            'Please register provider for key $calendarKey before calling this method with key $calendarKey',
       );
       final p = provider!;
       final unixOffset = await p.loadUnixEpochOffsetMilliseconds();
@@ -101,7 +104,7 @@ final class MillisecondStore {
     try {
       await future;
     } finally {
-      _loading.remove(calendarKey);
+      unawaited(_loading.remove(calendarKey));
     }
   }
 
@@ -111,12 +114,14 @@ final class MillisecondStore {
     final provider = _providers[calendarKey];
     LukashianException.check(
       provider != null,
-      () => 'Please register provider for key $calendarKey before calling this method with key $calendarKey',
+      () =>
+          'Please register provider for key $calendarKey before calling this method with key $calendarKey',
     );
     final cached = _data[calendarKey];
     LukashianException.check(
       cached != null,
-      () => 'Data for key $calendarKey not loaded. Call ensureLoaded($calendarKey) first.',
+      () =>
+          'Data for key $calendarKey not loaded. Call ensureLoaded($calendarKey) first.',
     );
     return cached!;
   }
