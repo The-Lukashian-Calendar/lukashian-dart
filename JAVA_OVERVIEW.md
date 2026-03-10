@@ -17,7 +17,7 @@ The codebase implements an **astronomically accurate calendar** where:
 
 ## 2. Directory Structure
 
-```
+```text
 src/
 ├── main/java/org/lukashian/           # Core domain & formatting
 │   ├── CalendarObject.java           # Base for Year, Day, Instant

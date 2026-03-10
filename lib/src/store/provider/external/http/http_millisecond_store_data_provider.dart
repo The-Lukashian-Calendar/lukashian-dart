@@ -27,18 +27,21 @@ class HttpMillisecondStoreDataProvider
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String url) async {
-    final client = HttpClient();
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 10);
     try {
-      final request = await client.getUrl(Uri.parse(url));
+      final request = await client
+          .getUrl(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
       request.headers.set('Accept', 'application/octet-stream');
-      final response = await request.close();
+      final response = await request.close().timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         throw HttpException(
           'Expected response code 200, instead received response code ${response.statusCode}',
         );
       }
       final builder = BytesBuilder();
-      await for (final chunk in response) {
+      await for (final chunk in response.timeout(const Duration(seconds: 15))) {
         builder.add(chunk);
       }
       return builder.toBytes();

@@ -45,7 +45,7 @@
 
 import 'lukashian_exception.dart';
 
-/// Common superclass of [Year], [Day] and [Instant].
+/// Common superclass of [Year], [Day] and [LukashianInstant].
 abstract base class CalendarObject {
   CalendarObject(this.calendarKey);
 
@@ -64,6 +64,3 @@ abstract base class CalendarObject {
     );
   }
 }
-
-// Subclasses Year, Day, Instant are in year.dart, day.dart, instant.dart
-// and will extend CalendarObject once implemented.
