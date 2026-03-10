@@ -60,6 +60,7 @@ final class MillisecondStore {
   int _defaultCalendarKey;
   final Map<int, MillisecondStoreDataProvider> _providers = {};
   final Map<int, MillisecondStoreData> _data = {};
+  final Map<int, Future<void>> _loading = {};
 
   int getDefaultCalendarKey() => _defaultCalendarKey;
   void setDefaultCalendarKey(int key) {
@@ -72,23 +73,36 @@ final class MillisecondStore {
   }
 
   /// Loads data for [calendarKey] from its provider if not already cached.
+  /// Deduplicates concurrent calls for the same key so only one load runs.
   /// Throws [LukashianException] if no provider is registered for [calendarKey].
   Future<void> ensureLoaded(int calendarKey) async {
     if (_data.containsKey(calendarKey)) return;
-    final provider = _providers[calendarKey];
-    LukashianException.check(
-      provider != null,
-      () => 'Please register provider for key $calendarKey before calling this method with key $calendarKey',
-    );
-    final p = provider!;
-    final unixOffset = await p.loadUnixEpochOffsetMilliseconds();
-    final yearMs = await p.loadYearEpochMilliseconds();
-    final dayMs = await p.loadDayEpochMilliseconds(yearMs);
-    _data[calendarKey] = MillisecondStoreData(
-      unixEpochOffsetMilliseconds: unixOffset,
-      yearEpochMilliseconds: yearMs,
-      dayEpochMilliseconds: dayMs,
-    );
+    final inFlight = _loading[calendarKey];
+    if (inFlight != null) return inFlight;
+
+    final future = () async {
+      final provider = _providers[calendarKey];
+      LukashianException.check(
+        provider != null,
+        () => 'Please register provider for key $calendarKey before calling this method with key $calendarKey',
+      );
+      final p = provider!;
+      final unixOffset = await p.loadUnixEpochOffsetMilliseconds();
+      final yearMs = await p.loadYearEpochMilliseconds();
+      final dayMs = await p.loadDayEpochMilliseconds(yearMs);
+      _data[calendarKey] = MillisecondStoreData(
+        unixEpochOffsetMilliseconds: unixOffset,
+        yearEpochMilliseconds: yearMs,
+        dayEpochMilliseconds: dayMs,
+      );
+    }();
+
+    _loading[calendarKey] = future;
+    try {
+      await future;
+    } finally {
+      _loading.remove(calendarKey);
+    }
   }
 
   /// Returns cached data for [calendarKey]. Call [ensureLoaded] first.
@@ -113,5 +127,6 @@ final class MillisecondStore {
 
   void clearAllData() {
     _data.clear();
+    _loading.clear();
   }
 }

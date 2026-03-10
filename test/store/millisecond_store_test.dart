@@ -50,29 +50,39 @@ import '../helpers/lukashian_assert.dart';
 import '../helpers/test_millisecond_store_data_provider.dart';
 
 void main() {
+  final store = MillisecondStore.store();
+
+  setUp(() {
+    store.clearAllData();
+  });
+
+  tearDown(() {
+    store.clearAllData();
+  });
+
   test('testDataLoading', () async {
     var counter = 0;
     final loadCounterProvider = _CountingTestProvider(() => counter++);
 
-    MillisecondStore.store().registerProvider(testCalendarKey + 2, loadCounterProvider);
+    store.registerProvider(testCalendarKey + 2, loadCounterProvider);
 
-    assertLukashianException(() => MillisecondStore.store().data(testCalendarKey + 3));
+    assertLukashianException(() => store.data(testCalendarKey + 3));
 
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 1);
 
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 1);
 
-    MillisecondStore.store().clearData(testCalendarKey + 2);
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.clearData(testCalendarKey + 2);
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 2);
 
-    MillisecondStore.store().clearAllData();
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.clearAllData();
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 3);
   });
 }
