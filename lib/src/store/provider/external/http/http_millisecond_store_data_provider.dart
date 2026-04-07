@@ -11,36 +11,37 @@ import '../external_resource_millisecond_store_data_provider.dart';
 
 /// Loads epoch data from HTTP(S) URLs. Base URL should end with a path separator;
 /// extensions are appended as-is.
-class HttpMillisecondStoreDataProvider extends ExternalResourceMillisecondStoreDataProvider {
+class HttpMillisecondStoreDataProvider
+    extends ExternalResourceMillisecondStoreDataProvider {
   HttpMillisecondStoreDataProvider(
-    String baseUrl,
-    String unixEpochOffsetUrlExtension,
-    String yearEpochMillisecondsUrlExtension,
-    String dayEpochMillisecondsUrlExtension,
-  ) : super(
-          baseUrl,
-          unixEpochOffsetUrlExtension,
-          yearEpochMillisecondsUrlExtension,
-          dayEpochMillisecondsUrlExtension,
-        );
+    super.baseLocation,
+    super.unixEpochOffsetExtension,
+    super.yearEpochMillisecondsExtension,
+    super.dayEpochMillisecondsExtension,
+  );
 
-  HttpMillisecondStoreDataProvider.withDefaults(String baseUrl)
-      : super.withDefaults(baseUrl);
+  // note: cannot use super.baseLocation - would mix super parameter with positional super call.
+  // ignore: use_super_parameters
+  HttpMillisecondStoreDataProvider.withDefaults(String baseLocation)
+    : super.withDefaults(baseLocation);
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String url) async {
-    final client = HttpClient();
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(seconds: 10);
     try {
-      final request = await client.getUrl(Uri.parse(url));
+      final request = await client
+          .getUrl(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
       request.headers.set('Accept', 'application/octet-stream');
-      final response = await request.close();
+      final response = await request.close().timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
         throw HttpException(
           'Expected response code 200, instead received response code ${response.statusCode}',
         );
       }
       final builder = BytesBuilder();
-      await for (final chunk in response) {
+      await for (final chunk in response.timeout(const Duration(seconds: 15))) {
         builder.add(chunk);
       }
       return builder.toBytes();

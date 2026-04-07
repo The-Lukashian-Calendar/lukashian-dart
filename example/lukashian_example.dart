@@ -54,8 +54,10 @@ void main(List<String> args) async {
   } on LukashianException catch (e) {
     print('Error: $e');
     exit(1);
+  } on StateError catch (e) {
+    print('Error: $e');
+    exit(1);
   }
-  exit(0);
 }
 
 Future<void> _run({required int calendarKey, String? isoDate}) async {
@@ -75,13 +77,16 @@ Future<void> _run({required int calendarKey, String? isoDate}) async {
 
   final LukashianInstant instant;
   if (isoDate != null && isoDate.trim().isNotEmpty) {
-    final dateTime = DateTime.parse(isoDate.trim());
-    instant = LukashianInstant.ofDateTime(dateTime, calendarKey);
+    final dateTime = DateTime.tryParse(isoDate.trim());
+    instant = LukashianInstant.ofDateTime(
+      dateTime ?? DateTime.now(),
+      calendarKey,
+    );
   } else {
     instant = LukashianInstant.now(calendarKey);
   }
 
-  print(Formatter.formatInstant(instant));
+  print(Formatter.formatInstant(instant, dayFormat: DayFormat.dayFirst));
 }
 
 void _printHelp() {
@@ -91,8 +96,10 @@ Lukashian CLI – convert Earth date to Lukashian date (official lukashian.org)
 Usage:
   dart run example/lukashian_example.dart [options] [ISO_DATE]
 
-  If ISO_DATE is omitted, the current date/time is used.
-  ISO_DATE must be in ISO 8601 format (e.g. 2025-03-04 or 2025-03-04T12:00:00Z).
+  If ISO_DATE is omitted or invalid, the current date/time is used.
+  ISO_DATE must be in ISO 8601 format (e.g. 2025-03-28 or 2025-03-28T12:00:00Z).
+  Out-of-range elements overflow to the next unit (e.g. 2025-03-32 is 2025-04-01).
+
 
 Options:
   -c, --calendar    Calendar: earth or mars (default: earth)

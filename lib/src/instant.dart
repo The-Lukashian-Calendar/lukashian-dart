@@ -31,7 +31,7 @@
  *    change the functional behaviour of the Lukashian Calendar Mechanism as
  *    implemented by source code.
  *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER ''AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
@@ -160,7 +160,12 @@ final class LukashianInstant extends CalendarObject implements Comparable<Lukash
 
   DateTime toDateTime() => DateTime.fromMillisecondsSinceEpoch(getUnixEpochMilliseconds(), isUtc: true);
 
-  LukashianInstant toCalendar(int calendarKey) => LukashianInstant.ofUnixEpochMilliseconds(getUnixEpochMilliseconds(), calendarKey);
+  LukashianInstant toCalendar(int calendarKey) {
+    final offset = MillisecondStore.store().data(this.calendarKey).getUnixEpochOffsetMilliseconds();
+    final otherOffset = MillisecondStore.store().data(calendarKey).getUnixEpochOffsetMilliseconds();
+    final difference = offset - otherOffset;
+    return LukashianInstant.ofEpoch(getEpochMilliseconds() - difference, calendarKey);
+  }
 
   int differenceWith(LukashianInstant other) {
     checkSameKeyAs(other);

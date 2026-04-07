@@ -31,7 +31,7 @@
  *    change the functional behaviour of the Lukashian Calendar Mechanism as
  *    implemented by source code.
  *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER ''AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
@@ -67,4 +67,29 @@ class TestMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
   Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
     return [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000];
   }
+}
+
+/// Deterministic provider with fixed offset. Same year/day structure as
+/// [TestMillisecondStoreDataProvider]. Used for [LukashianInstant.toCalendar] tests
+/// where we need exactly-known offset differences.
+class ConstantOffsetTestProvider implements MillisecondStoreDataProvider {
+  ConstantOffsetTestProvider(this.offsetMilliseconds);
+
+  final int offsetMilliseconds;
+
+  static final List<int> _years = [1000, 2000, 3000, 4000, 4499, 4800, 5000, 40000];
+  static final List<int> _days = [
+    300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000,
+    3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000,
+  ];
+
+  @override
+  Future<int> loadUnixEpochOffsetMilliseconds() async => offsetMilliseconds;
+
+  @override
+  Future<List<int>> loadYearEpochMilliseconds() async => _years;
+
+  @override
+  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async =>
+      _days;
 }

@@ -31,7 +31,7 @@
  *    change the functional behaviour of the Lukashian Calendar Mechanism as
  *    implemented by source code.
  *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER ''AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
@@ -50,30 +50,53 @@ import '../helpers/lukashian_assert.dart';
 import '../helpers/test_millisecond_store_data_provider.dart';
 
 void main() {
+  final store = MillisecondStore.store();
+
+  setUp(() {
+    store.clearAllData();
+  });
+
+  tearDown(() {
+    store.clearAllData();
+  });
+
   test('testDataLoading', () async {
     var counter = 0;
     final loadCounterProvider = _CountingTestProvider(() => counter++);
 
-    MillisecondStore.store().registerProvider(testCalendarKey + 2, loadCounterProvider);
+    store.registerProvider(testCalendarKey + 2, loadCounterProvider);
 
-    assertLukashianException(() => MillisecondStore.store().data(testCalendarKey + 3));
+    assertLukashianException(() => store.data(testCalendarKey + 3));
 
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 1);
 
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 1);
 
-    MillisecondStore.store().clearData(testCalendarKey + 2);
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.clearData(testCalendarKey + 2);
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 2);
 
-    MillisecondStore.store().clearAllData();
-    await MillisecondStore.store().ensureLoaded(testCalendarKey + 2);
-    MillisecondStore.store().data(testCalendarKey + 2);
+    store.clearAllData();
+    await store.ensureLoaded(testCalendarKey + 2);
+    store.data(testCalendarKey + 2);
     expect(counter, 3);
+  });
+
+  test('concurrent ensureLoaded for same key deduplicates provider fetches', () async {
+    var loadCount = 0;
+    final provider = _DelayedCountingProvider(() => loadCount++);
+
+    store.registerProvider(testCalendarKey + 2, provider);
+
+    // Fire multiple concurrent ensureLoaded calls before any can complete.
+    final futures = List.generate(10, (_) => store.ensureLoaded(testCalendarKey + 2));
+    await Future.wait(futures);
+
+    expect(loadCount, 1);
   });
 }
 
@@ -85,6 +108,21 @@ class _CountingTestProvider extends TestMillisecondStoreDataProvider {
   @override
   Future<int> loadUnixEpochOffsetMilliseconds() async {
     _onLoad();
+    return super.loadUnixEpochOffsetMilliseconds();
+  }
+}
+
+/// Provider that yields before loading so concurrent ensureLoaded callers can
+/// observe the in-flight future and await it instead of starting duplicate loads.
+class _DelayedCountingProvider extends TestMillisecondStoreDataProvider {
+  _DelayedCountingProvider(this._onLoad);
+
+  final void Function() _onLoad;
+
+  @override
+  Future<int> loadUnixEpochOffsetMilliseconds() async {
+    _onLoad();
+    await Future<void>.delayed(const Duration(milliseconds: 50));
     return super.loadUnixEpochOffsetMilliseconds();
   }
 }

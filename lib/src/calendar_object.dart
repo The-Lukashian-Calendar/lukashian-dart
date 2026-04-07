@@ -31,7 +31,7 @@
  *    change the functional behaviour of the Lukashian Calendar Mechanism as
  *    implemented by source code.
  *
- * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER ''AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
  * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
@@ -45,7 +45,7 @@
 
 import 'lukashian_exception.dart';
 
-/// Common superclass of [Year], [Day] and [Instant].
+/// Common superclass of [Year], [Day] and [LukashianInstant].
 abstract base class CalendarObject {
   CalendarObject(this.calendarKey);
 
@@ -64,6 +64,3 @@ abstract base class CalendarObject {
     );
   }
 }
-
-// Subclasses Year, Day, Instant are in year.dart, day.dart, instant.dart
-// and will extend CalendarObject once implemented.

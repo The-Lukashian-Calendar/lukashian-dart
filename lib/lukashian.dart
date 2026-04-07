@@ -5,7 +5,6 @@ export 'src/calendar_object.dart';
 export 'src/day.dart';
 export 'src/formatter.dart';
 export 'src/instant.dart';
-export 'src/lukashian_base.dart';
 export 'src/lukashian_exception.dart';
 export 'src/store/calendar_keys.dart';
 export 'src/store/millisecond_store.dart';
