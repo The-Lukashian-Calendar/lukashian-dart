@@ -107,7 +107,9 @@ final class MillisecondStore {
     try {
       await future;
     } finally {
-      unawaited(_loading.remove(calendarKey));
+      // This is safe because the future is already awaited above.
+      // ignore: unawaited_futures
+      _loading.remove(calendarKey);
     }
   }
 
