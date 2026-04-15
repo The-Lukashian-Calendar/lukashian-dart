@@ -52,8 +52,14 @@ import 'store/millisecond_store.dart';
 /// Represents a year in the Lukashian Calendar Mechanism.
 final class Year extends CalendarObject implements Comparable<Year> {
   Year._(this._year, super.calendarKey)
-      : _epochMilliseconds = MillisecondStore.store().data(calendarKey).getEpochMillisecondsForYear(_year),
-        _epochMillisecondsPreviousYear = _year == 1 ? 0 : MillisecondStore.store().data(calendarKey).getEpochMillisecondsForYear(_year - 1);
+    : _epochMilliseconds = MillisecondStore.store()
+          .data(calendarKey)
+          .getEpochMillisecondsForYear(_year),
+      _epochMillisecondsPreviousYear = _year == 1
+          ? 0
+          : MillisecondStore.store()
+                .data(calendarKey)
+                .getEpochMillisecondsForYear(_year - 1);
 
   final int _year;
   final int _epochMilliseconds;
@@ -74,10 +80,16 @@ final class Year extends CalendarObject implements Comparable<Year> {
 
   Day atDay(int day) => Day.of(this, day);
   Day firstDay() => Day.of(this, 1);
-  Day lastDay() => Day.ofEpoch(MillisecondStore.store().data(calendarKey).getEpochDayForEpochMilliseconds(getEpochMilliseconds()), calendarKey);
+  Day lastDay() => Day.ofEpoch(
+    MillisecondStore.store()
+        .data(calendarKey)
+        .getEpochDayForEpochMilliseconds(getEpochMilliseconds()),
+    calendarKey,
+  );
 
-  LukashianInstant firstInstant() => LukashianInstant.ofEpoch(getEpochMillisecondsAtStartOfYear(), calendarKey);
-  LukashianInstant lastInstant() => LukashianInstant.ofEpoch(getEpochMilliseconds(), calendarKey);
+  Instant firstInstant() =>
+      Instant.ofEpoch(getEpochMillisecondsAtStartOfYear(), calendarKey);
+  Instant lastInstant() => Instant.ofEpoch(getEpochMilliseconds(), calendarKey);
 
   bool isBefore(Year other) {
     checkSameKeyAs(other);
@@ -102,9 +114,10 @@ final class Year extends CalendarObject implements Comparable<Year> {
   bool contains(CalendarObject other) {
     checkSameKeyAs(other);
     if (other is Day) return this == other.getYear();
-    if (other is LukashianInstant) {
+    if (other is Instant) {
       final instantEpoch = other.getEpochMilliseconds();
-      return instantEpoch >= getEpochMillisecondsAtStartOfYear() && instantEpoch <= _epochMilliseconds;
+      return instantEpoch >= getEpochMillisecondsAtStartOfYear() &&
+          instantEpoch <= _epochMilliseconds;
     }
     return false;
   }
@@ -114,7 +127,8 @@ final class Year extends CalendarObject implements Comparable<Year> {
     return !contains(other);
   }
 
-  int lengthInMilliseconds() => _epochMilliseconds - _epochMillisecondsPreviousYear;
+  int lengthInMilliseconds() =>
+      _epochMilliseconds - _epochMillisecondsPreviousYear;
   int getNumberOfDays() => lastDay().getDayNumber();
   int getYearNumber() => _year;
   int getEpochMilliseconds() => _epochMilliseconds;
@@ -127,15 +141,24 @@ final class Year extends CalendarObject implements Comparable<Year> {
   }
 
   static Year of(int year, [int? calendarKey]) {
-    LukashianException.check(year >= 1, () => '$year is not a valid year, the minimum is 1');
-    return Year._(year, calendarKey ?? MillisecondStore.store().getDefaultCalendarKey());
+    LukashianException.check(
+      year >= 1,
+      () => '$year is not a valid year, the minimum is 1',
+    );
+    return Year._(
+      year,
+      calendarKey ?? MillisecondStore.store().getDefaultCalendarKey(),
+    );
   }
 
   static Year now([int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final store = MillisecondStore.store();
     final data = store.data(key);
-    return Year.of(data.getYearForEpochMilliseconds(data.getCurrentEpochMilliseconds()), key);
+    return Year.of(
+      data.getYearForEpochMilliseconds(data.getCurrentEpochMilliseconds()),
+      key,
+    );
   }
 
   @override
@@ -146,7 +169,10 @@ final class Year extends CalendarObject implements Comparable<Year> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is Year && other._year == _year && other.calendarKey == calendarKey);
+      identical(this, other) ||
+      (other is Year &&
+          other._year == _year &&
+          other.calendarKey == calendarKey);
 
   @override
   String toString() => '[Year: $_year]';

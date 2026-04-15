@@ -54,15 +54,23 @@ import 'year.dart';
 /// Represents a day in the Lukashian Calendar Mechanism.
 final class Day extends CalendarObject implements Comparable<Day> {
   Day._(this._epochDay, super.calendarKey)
-      : _epochMilliseconds = MillisecondStore.store().data(calendarKey).getEpochMillisecondsForEpochDay(_epochDay),
-        _epochMillisecondsPreviousDay = _epochDay == 1 ? 0 : MillisecondStore.store().data(calendarKey).getEpochMillisecondsForEpochDay(_epochDay - 1);
+    : _epochMilliseconds = MillisecondStore.store()
+          .data(calendarKey)
+          .getEpochMillisecondsForEpochDay(_epochDay),
+      _epochMillisecondsPreviousDay = _epochDay == 1
+          ? 0
+          : MillisecondStore.store()
+                .data(calendarKey)
+                .getEpochMillisecondsForEpochDay(_epochDay - 1);
 
   final int _epochDay;
   final int _epochMilliseconds;
   final int _epochMillisecondsPreviousDay;
 
-  Day minusYears(int yearsToSubtract) => Day.of(getYear().minusYears(yearsToSubtract), getDayNumber());
-  Day plusYears(int yearsToAdd) => Day.of(getYear().plusYears(yearsToAdd), getDayNumber());
+  Day minusYears(int yearsToSubtract) =>
+      Day.of(getYear().minusYears(yearsToSubtract), getDayNumber());
+  Day plusYears(int yearsToAdd) =>
+      Day.of(getYear().plusYears(yearsToAdd), getDayNumber());
 
   Day minusDays(int daysToSubtract) {
     if (daysToSubtract < 0) return plusDays(-daysToSubtract);
@@ -77,11 +85,12 @@ final class Day extends CalendarObject implements Comparable<Day> {
   Day previous() => minusDays(1);
   Day next() => plusDays(1);
 
-  LukashianInstant atTime(Fraction proportionOfDay) => LukashianInstant.of(this, proportionOfDay);
-  LukashianInstant atTimeBeeps(int beeps) => LukashianInstant.ofBeeps(this, beeps);
+  Instant atTime(Fraction proportionOfDay) => Instant.of(this, proportionOfDay);
+  Instant atTimeBeeps(int beeps) => Instant.ofBeeps(this, beeps);
 
-  LukashianInstant firstInstant() => LukashianInstant.ofEpoch(getEpochMillisecondsAtStartOfDay(), calendarKey);
-  LukashianInstant lastInstant() => LukashianInstant.ofEpoch(_epochMilliseconds, calendarKey);
+  Instant firstInstant() =>
+      Instant.ofEpoch(getEpochMillisecondsAtStartOfDay(), calendarKey);
+  Instant lastInstant() => Instant.ofEpoch(_epochMilliseconds, calendarKey);
 
   bool isBefore(Day other) {
     checkSameKeyAs(other);
@@ -103,12 +112,12 @@ final class Day extends CalendarObject implements Comparable<Day> {
     return _epochDay >= other._epochDay;
   }
 
-  bool contains(LukashianInstant instant) {
+  bool contains(Instant instant) {
     checkSameKeyAs(instant);
     return this == instant.getDay();
   }
 
-  bool containsNot(LukashianInstant instant) {
+  bool containsNot(Instant instant) {
     checkSameKeyAs(instant);
     return !contains(instant);
   }
@@ -123,21 +132,33 @@ final class Day extends CalendarObject implements Comparable<Day> {
     return year.containsNot(this);
   }
 
-  int lengthInMilliseconds() => _epochMilliseconds - _epochMillisecondsPreviousDay;
+  int lengthInMilliseconds() =>
+      _epochMilliseconds - _epochMillisecondsPreviousDay;
   int getEpochDay() => _epochDay;
   int getEpochMilliseconds() => _epochMilliseconds;
   int getEpochMillisecondsPreviousDay() => _epochMillisecondsPreviousDay;
   int getEpochMillisecondsAtStartOfDay() => _epochMillisecondsPreviousDay + 1;
 
-  Year getYear() => Year.of(MillisecondStore.store().data(calendarKey).getYearForEpochMilliseconds(getEpochMillisecondsAtStartOfDay()), calendarKey);
-  Year getEndYear() => Year.of(MillisecondStore.store().data(calendarKey).getYearForEpochMilliseconds(_epochMilliseconds), calendarKey);
+  Year getYear() => Year.of(
+    MillisecondStore.store()
+        .data(calendarKey)
+        .getYearForEpochMilliseconds(getEpochMillisecondsAtStartOfDay()),
+    calendarKey,
+  );
+  Year getEndYear() => Year.of(
+    MillisecondStore.store()
+        .data(calendarKey)
+        .getYearForEpochMilliseconds(_epochMilliseconds),
+    calendarKey,
+  );
 
   int getDayNumber() {
     final firstEpochDayOfYear = _getFirstDayOfYearInEpochForm(getYear());
     return (_epochDay - firstEpochDayOfYear) + 1;
   }
 
-  Fraction getLengthOfBeepInMilliseconds() => Fraction(lengthInMilliseconds(), LukashianInstant.beepsPerDay);
+  Fraction getLengthOfBeepInMilliseconds() =>
+      Fraction(lengthInMilliseconds(), Instant.beepsPerDay);
 
   int differenceWith(Day other) {
     checkSameKeyAs(other);
@@ -145,14 +166,23 @@ final class Day extends CalendarObject implements Comparable<Day> {
   }
 
   static Day ofEpoch(int epochDay, [int? calendarKey]) {
-    LukashianException.check(epochDay >= 1, () => '$epochDay is not a valid epoch day, the minimum is 1');
+    LukashianException.check(
+      epochDay >= 1,
+      () => '$epochDay is not a valid epoch day, the minimum is 1',
+    );
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     return Day._(epochDay, key);
   }
 
   static Day of(Year year, int day) {
-    LukashianException.check(day >= 1, () => '$day is not a valid day, the minimum is 1');
-    LukashianException.check(day <= year.getNumberOfDays(), () => '$day is not a valid day in year ${year.getYearNumber()}');
+    LukashianException.check(
+      day >= 1,
+      () => '$day is not a valid day, the minimum is 1',
+    );
+    LukashianException.check(
+      day <= year.getNumberOfDays(),
+      () => '$day is not a valid day in year ${year.getYearNumber()}',
+    );
     final firstEpochDayOfYear = _getFirstDayOfYearInEpochForm(year);
     return Day.ofEpoch((firstEpochDayOfYear + day) - 1, year.getCalendarKey());
   }
@@ -166,18 +196,28 @@ final class Day extends CalendarObject implements Comparable<Day> {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final store = MillisecondStore.store();
     final data = store.data(key);
-    return Day.ofEpoch(data.getEpochDayForEpochMilliseconds(data.getCurrentEpochMilliseconds()), key);
+    return Day.ofEpoch(
+      data.getEpochDayForEpochMilliseconds(data.getCurrentEpochMilliseconds()),
+      key,
+    );
   }
 
   static int _getFirstDayOfYearInEpochForm(Year year) {
     final store = MillisecondStore.store();
     final key = year.getCalendarKey();
     final data = store.data(key);
-    final epochMillisecondsAtStartOfYear = year.getEpochMillisecondsAtStartOfYear();
-    final runningEpochDayAtStartOfYear = data.getEpochDayForEpochMilliseconds(epochMillisecondsAtStartOfYear);
-    final epochMillisecondsAtStartOfRunningDay = runningEpochDayAtStartOfYear == 1
+    final epochMillisecondsAtStartOfYear = year
+        .getEpochMillisecondsAtStartOfYear();
+    final runningEpochDayAtStartOfYear = data.getEpochDayForEpochMilliseconds(
+      epochMillisecondsAtStartOfYear,
+    );
+    final epochMillisecondsAtStartOfRunningDay =
+        runningEpochDayAtStartOfYear == 1
         ? 1
-        : data.getEpochMillisecondsForEpochDay(runningEpochDayAtStartOfYear - 1) + 1;
+        : data.getEpochMillisecondsForEpochDay(
+                runningEpochDayAtStartOfYear - 1,
+              ) +
+              1;
     if (epochMillisecondsAtStartOfRunningDay < epochMillisecondsAtStartOfYear) {
       return runningEpochDayAtStartOfYear + 1;
     }
@@ -192,7 +232,10 @@ final class Day extends CalendarObject implements Comparable<Day> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is Day && other._epochDay == _epochDay && other.calendarKey == calendarKey);
+      identical(this, other) ||
+      (other is Day &&
+          other._epochDay == _epochDay &&
+          other.calendarKey == calendarKey);
 
   @override
   String toString() => '[Day: ${getYear().getYearNumber()}-${getDayNumber()}]';

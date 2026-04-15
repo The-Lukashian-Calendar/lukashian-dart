@@ -80,7 +80,7 @@ Future<void> _run({required int calendarKey, String? isoDate}) async {
   await store.ensureLoaded(calendarKey);
   store.setDefaultCalendarKey(calendarKey);
 
-  final LukashianInstant instant;
+  final Instant instant;
   if (isoDate != null && isoDate.trim().isNotEmpty) {
     final trimmed = isoDate.trim();
     final dateTime = DateTime.tryParse(trimmed);
@@ -89,12 +89,9 @@ Future<void> _run({required int calendarKey, String? isoDate}) async {
         'Warning: could not parse ISO_DATE "$trimmed"; using current date/time.',
       );
     }
-    instant = LukashianInstant.ofDateTime(
-      dateTime ?? DateTime.now(),
-      calendarKey,
-    );
+    instant = Instant.ofDateTime(dateTime ?? DateTime.now(), calendarKey);
   } else {
-    instant = LukashianInstant.now(calendarKey);
+    instant = Instant.now(calendarKey);
   }
 
   print(Formatter.formatInstant(instant, dayFormat: DayFormat.dayFirst));
