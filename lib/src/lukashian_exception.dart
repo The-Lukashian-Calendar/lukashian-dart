@@ -43,10 +43,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/// An exception in the Lukashian Calendar.
+/// An [Exception] in the Lukashian Calendar.
 final class LukashianException implements Exception {
+  /// Creates an exception with the given [message].
   LukashianException(this.message);
 
+  /// The message describing this exception.
   final String message;
 
   @override

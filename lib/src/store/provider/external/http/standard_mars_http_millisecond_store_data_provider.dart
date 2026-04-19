@@ -6,8 +6,13 @@
 
 import 'http_millisecond_store_data_provider.dart';
 
-/// Loads the Standard Mars calendar from the official lukashian.org server.
+/// [HttpMillisecondStoreDataProvider] that loads from the official lukashian.org
+/// Standard Mars millisecond store.
+///
+/// Server-side values are produced by the Java class
+/// `StandardMarsMillisecondStoreDataProvider`.
 class StandardMarsHttpMillisecondStoreDataProvider extends HttpMillisecondStoreDataProvider {
+  /// Uses `https://lukashian.org/millisecondstore/standardmars/` as base URL.
   StandardMarsHttpMillisecondStoreDataProvider()
       : super.withDefaults('https://lukashian.org/millisecondstore/standardmars/');
 }

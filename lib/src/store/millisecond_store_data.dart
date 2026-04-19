@@ -45,9 +45,28 @@
 
 import '../lukashian_exception.dart';
 
-/// Stores epoch milliseconds for years and days, and Lukashian–UNIX offset.
-/// Built from loaded provider data; immutable.
+/// For each [Day] and [Year], stores the number of milliseconds between the
+/// start of the calendar (the Lukashian epoch) and the end of that day or year.
+/// It also stores the offset between the Lukashian epoch and the UNIX epoch.
+///
+/// Values are supplied when this object is constructed (in [MillisecondStore]
+/// after loading from a [MillisecondStoreDataProvider]).
+///
+/// This class contains the calculations to convert between UNIX time and
+/// Terrestrial Time by correcting for leap seconds. Other conversions are not
+/// done. UNIX time is not equal to UTC
+/// (<https://en.wikipedia.org/wiki/Unix_time#UTC_basis>), so corrections for
+/// UNIX timestamps from before the leap second era are not necessary: UNIX
+/// time is a fixed number of milliseconds since the UNIX epoch.
+///
+/// The constant TAI − TT difference is not corrected for separately; that
+/// correction is included in [getUnixEpochOffsetMilliseconds].
+///
+/// [MillisecondStoreData] is immutable.
+///
+/// See also [MillisecondStore], [MillisecondStoreDataProvider].
 class MillisecondStoreData {
+  /// Creates store data from pre-loaded epoch arrays and UNIX offset.
   MillisecondStoreData({
     required int unixEpochOffsetMilliseconds,
     required List<int> yearEpochMilliseconds,
@@ -62,10 +81,14 @@ class MillisecondStoreData {
   final List<int> _dayEpochMilliseconds;
   final List<int> _unixTimestampsWithLeapSecond;
 
-  /// Offset between the UNIX epoch and the Lukashian epoch for this calendar.
+  /// The offset between the UNIX epoch and the Lukashian epoch for this
+  /// calendar instance.
+  ///
+  /// See [MillisecondStoreDataProvider] for semantics.
   int getUnixEpochOffsetMilliseconds() => _unixEpochOffsetMilliseconds;
 
-  /// Milliseconds from UNIX epoch to the given Lukashian epoch milliseconds.
+  /// Milliseconds from the UNIX epoch until the given Lukashian epoch
+  /// milliseconds.
   int getUnixEpochMilliseconds(int lukashianEpochMilliseconds) {
     final unixEpochMilliseconds =
         lukashianEpochMilliseconds - _unixEpochOffsetMilliseconds;
@@ -74,19 +97,23 @@ class MillisecondStoreData {
     return unixEpochMilliseconds - (numberOfLeapSeconds * 1000);
   }
 
-  /// Lukashian epoch milliseconds for the given UNIX epoch milliseconds.
+  /// Milliseconds from the start of the Lukashian calendar until the given
+  /// UNIX epoch milliseconds.
   int getLukashianEpochMilliseconds(int unixEpochMilliseconds) {
     final index = _binarySearch(_unixTimestampsWithLeapSecond, unixEpochMilliseconds);
     final numberOfLeapSeconds = index >= 0 ? index + 1 : -index - 1;
     return unixEpochMilliseconds + (numberOfLeapSeconds * 1000) + _unixEpochOffsetMilliseconds;
   }
 
-  /// Lukashian epoch milliseconds for the current time.
+  /// Milliseconds from the start of the Lukashian calendar until now.
   int getCurrentEpochMilliseconds() {
     return getLukashianEpochMilliseconds(DateTime.now().millisecondsSinceEpoch);
   }
 
-  /// Epoch milliseconds at the end of the given year (year 1-based).
+  /// Milliseconds from the start of the Lukashian calendar until the final
+  /// point of the given [year] (1-based).
+  ///
+  /// Throws [LukashianException] if [year] is out of range.
   int getEpochMillisecondsForYear(int year) {
     LukashianException.check(
       year >= 1,
@@ -99,7 +126,10 @@ class MillisecondStoreData {
     return _yearEpochMilliseconds[year - 1];
   }
 
-  /// Epoch milliseconds at the end of the given epoch day (1-based).
+  /// Milliseconds from the start of the Lukashian calendar until the final
+  /// point of the given [epochDay] (1-based; epoch days, not year-relative).
+  ///
+  /// Throws [LukashianException] if [epochDay] is out of range.
   int getEpochMillisecondsForEpochDay(int epochDay) {
     LukashianException.check(
       epochDay >= 1,
@@ -112,7 +142,10 @@ class MillisecondStoreData {
     return _dayEpochMilliseconds[epochDay - 1];
   }
 
-  /// Year (1-based) that contains the given epoch milliseconds.
+  /// The year (1-based) that overlaps the point where [epochMilliseconds] have
+  /// passed since the start of the Lukashian calendar.
+  ///
+  /// Throws [LukashianException] if [epochMilliseconds] is out of range.
   int getYearForEpochMilliseconds(int epochMilliseconds) {
     LukashianException.check(
       epochMilliseconds >= 1,
@@ -126,7 +159,10 @@ class MillisecondStoreData {
     return index >= 0 ? index + 1 : -index;
   }
 
-  /// Epoch day (1-based) that contains the given epoch milliseconds.
+  /// The epoch day (1-based) that overlaps the point where [epochMilliseconds]
+  /// have passed since the start of the Lukashian calendar.
+  ///
+  /// Throws [LukashianException] if [epochMilliseconds] is out of range.
   int getEpochDayForEpochMilliseconds(int epochMilliseconds) {
     LukashianException.check(
       epochMilliseconds >= 1,

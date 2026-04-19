@@ -8,14 +8,43 @@ import 'dart:typed_data';
 
 import '../../millisecond_store_data_provider.dart';
 
-/// Base for loading epoch data from an external resource (file or URL).
-/// Combines [baseLocation] with per-resource extensions and decodes 8-byte
-/// big-endian long values. Subclasses implement [loadMillisecondsByteArray].
+/// Base functionality for loading epoch millisecond arrays from an external
+/// resource (file or URL), so the exact numbers can be maintained centrally.
+///
+/// A [MillisecondStoreDataProvider] must supply the UNIX offset, year epoch
+/// milliseconds, and day epoch milliseconds — see [MillisecondStoreDataProvider].
+///
+/// This class combines [baseLocation] with three extensions (one per load
+/// method). **The base location must end with a path separator**; extensions
+/// are appended as-is.
+///
+/// Defaults match the Java constants
+/// [defaultUnixEpochOffsetExtension], [defaultYearEpochMillisecondsExtension],
+/// [defaultDayEpochMillisecondsExtension].
+///
+/// Data is a binary stream: **each consecutive 8 bytes is one signed epoch
+/// millisecond value** (big-endian), same as Java `ByteBuffer` longs. The UNIX
+/// offset stream must contain exactly one value.
+///
+/// Subclasses implement [loadMillisecondsByteArray] for the actual I/O (file,
+/// HTTP, etc.).
+///
+/// See also [FileMillisecondStoreDataProvider], [HttpMillisecondStoreDataProvider].
 abstract class ExternalResourceMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
+  /// Default extension for [loadUnixEpochOffsetMilliseconds] (one 8-byte value).
   static const String defaultUnixEpochOffsetExtension = 'unixEpochOffset';
+
+  /// Default extension for [loadYearEpochMilliseconds].
   static const String defaultYearEpochMillisecondsExtension = 'yearEpochMilliseconds';
+
+  /// Default extension for [loadDayEpochMilliseconds].
   static const String defaultDayEpochMillisecondsExtension = 'dayEpochMilliseconds';
 
+  /// Creates a provider that loads from [baseLocation] with the given
+  /// [unixEpochOffsetExtension], [yearEpochMillisecondsExtension], and
+  /// [dayEpochMillisecondsExtension].
+  ///
+  /// **The base location must end with a path separator.**
   ExternalResourceMillisecondStoreDataProvider(
     this.baseLocation,
     this.unixEpochOffsetExtension,
@@ -23,6 +52,10 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
     this.dayEpochMillisecondsExtension,
   );
 
+  /// Creates a provider using [baseLocation] and [defaultUnixEpochOffsetExtension],
+  /// [defaultYearEpochMillisecondsExtension], [defaultDayEpochMillisecondsExtension].
+  ///
+  /// **The base location must end with a path separator.**
   ExternalResourceMillisecondStoreDataProvider.withDefaults(String baseLocation)
       : this(
           baseLocation,
@@ -31,9 +64,16 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
           defaultDayEpochMillisecondsExtension,
         );
 
+  /// Base URL or directory, ending with `/` or the platform path separator.
   final String baseLocation;
+
+  /// Extension appended to [baseLocation] for the UNIX offset file.
   final String unixEpochOffsetExtension;
+
+  /// Extension appended to [baseLocation] for year epoch milliseconds.
   final String yearEpochMillisecondsExtension;
+
+  /// Extension appended to [baseLocation] for day epoch milliseconds.
   final String dayEpochMillisecondsExtension;
 
   @override
@@ -77,7 +117,7 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
     }
   }
 
-  /// Decodes 8-byte big-endian longs from [bytes]. Same format as Java ByteBuffer.asLongBuffer().
+  /// Decodes 8-byte big-endian signed integers from [bytes] (Java long layout).
   static List<int> _decodeLongs(List<int> bytes) {
     final data = ByteData.sublistView(Uint8List.fromList(bytes));
     final count = bytes.length ~/ 8;
@@ -88,6 +128,7 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
     return result;
   }
 
-  /// Loads raw bytes from the given location (base + extension). Each 8 bytes = one epoch millisecond value.
+  /// Loads the raw bytes for the full resource path [location] (`base` +
+  /// `extension`).
   Future<List<int>> loadMillisecondsByteArray(String location);
 }

@@ -6,8 +6,13 @@
 
 import 'http_millisecond_store_data_provider.dart';
 
-/// Loads the Standard Earth calendar from the official lukashian.org server.
+/// [HttpMillisecondStoreDataProvider] that loads from the official lukashian.org
+/// Standard Earth millisecond store.
+///
+/// Server-side values are produced by the Java class
+/// `StandardEarthMillisecondStoreDataProvider`.
 class StandardEarthHttpMillisecondStoreDataProvider extends HttpMillisecondStoreDataProvider {
+  /// Uses `https://lukashian.org/millisecondstore/standardearth/` as base URL.
   StandardEarthHttpMillisecondStoreDataProvider()
       : super.withDefaults('https://lukashian.org/millisecondstore/standardearth/');
 }

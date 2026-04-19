@@ -50,13 +50,32 @@ import 'calendar_keys.dart';
 import 'millisecond_store_data.dart';
 import 'millisecond_store_data_provider.dart';
 
-/// Singleton that manages Lukashian calendar instances (providers and cached data).
-/// Call [ensureLoaded] before using [data] for a given key.
+/// Singleton that manages the various instances of the Lukashian Calendar. Each
+/// instance is implemented by a [MillisecondStoreDataProvider].
+///
+/// The int constants in [CalendarKeys] represent the instances supported by
+/// default. You can register your own [MillisecondStoreDataProvider] under a
+/// custom key.
+///
+/// The default calendar instance is used when [Year], [Day] and [Instant]
+/// methods do not specify a calendar key. By default the default is
+/// [CalendarKeys.earth]. You can change it with [setDefaultCalendarKey].
+///
+/// Data is requested from a provider only when needed. In this Dart port, call
+/// [ensureLoaded] once per key before [data]; loaded data is cached in
+/// [MillisecondStoreData] so providers do not need to implement caching.
+///
+/// In the Java API, `MillisecondStore.data(int)` and
+/// `MillisecondStore.defaultCalendarKey()` are static shortcuts on the
+/// singleton; in Dart use [store] and then instance methods.
+///
+/// See also [MillisecondStoreData], [MillisecondStoreDataProvider].
 final class MillisecondStore {
   MillisecondStore._() : _defaultCalendarKey = CalendarKeys.earth;
 
   static final MillisecondStore _instance = MillisecondStore._();
 
+  /// The singleton [MillisecondStore].
   static MillisecondStore store() => _instance;
 
   int _defaultCalendarKey;
@@ -64,13 +83,21 @@ final class MillisecondStore {
   final Map<int, MillisecondStoreData> _data = {};
   final Map<int, Future<void>> _loading = {};
 
+  /// The default calendar key when no explicit key is provided.
   int getDefaultCalendarKey() => _defaultCalendarKey;
+
+  /// Sets the default calendar key when no explicit key is provided.
   void setDefaultCalendarKey(int key) {
     _defaultCalendarKey = key;
   }
 
-  /// Registers a provider. Do not overwrite standard [CalendarKeys] values.
-  /// Registering a provider under a key also clears any cached data for that key.
+  /// Registers [provider] under [key].
+  ///
+  /// Do not overwrite the standard keys in [CalendarKeys] — other code may
+  /// depend on those constants.
+  ///
+  /// Registering also clears cached [MillisecondStoreData] for that key (see
+  /// [clearData]).
   void registerProvider(int key, MillisecondStoreDataProvider provider) {
     _providers[key] = provider;
     clearData(key);
@@ -78,8 +105,9 @@ final class MillisecondStore {
   }
 
   /// Loads data for [calendarKey] from its provider if not already cached.
-  /// Deduplicates concurrent calls for the same key so only one load runs.
-  /// Throws [LukashianException] if no provider is registered for [calendarKey].
+  ///
+  /// Concurrent calls for the same key share one in-flight load. Throws
+  /// [LukashianException] if no provider is registered for [calendarKey].
   Future<void> ensureLoaded(int calendarKey) async {
     if (_data.containsKey(calendarKey)) return;
     final inFlight = _loading[calendarKey];
@@ -113,8 +141,11 @@ final class MillisecondStore {
     }
   }
 
-  /// Returns cached data for [calendarKey]. Call [ensureLoaded] first.
-  /// Throws [LukashianException] if no provider is registered or data not yet loaded.
+  /// Returns cached [MillisecondStoreData] for [calendarKey].
+  ///
+  /// Data is loaded from the provider only once (via [ensureLoaded]). Throws
+  /// [LukashianException] if no provider is registered for [calendarKey], or if
+  /// data has not been loaded yet.
   MillisecondStoreData data(int calendarKey) {
     final provider = _providers[calendarKey];
     LukashianException.check(
@@ -131,10 +162,14 @@ final class MillisecondStore {
     return cached!;
   }
 
+  /// Clears cached data for [key] so the next [ensureLoaded] / [data] will
+  /// reload from the provider.
   void clearData(int key) {
     _data.remove(key);
   }
 
+  /// Clears all cached [MillisecondStoreData] so data will be re-requested from
+  /// providers on next load.
   void clearAllData() {
     _data.clear();
     _loading.clear();

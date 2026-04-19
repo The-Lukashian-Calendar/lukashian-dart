@@ -52,6 +52,25 @@ import 'store/millisecond_store.dart';
 import 'year.dart';
 
 /// Represents a day in the Lukashian Calendar Mechanism.
+///
+/// The first day of every year is day 1. A day is part of the year that it
+/// starts in, even if it finishes in the next year.
+///
+/// By definition, the exact point at which a day starts belongs to that day,
+/// not the previous day, which ends at that point. So a day runs from its start
+/// (inclusive) to its end (exclusive).
+///
+/// Day length in milliseconds is not constant; it reflects the actual length
+/// of that day in astronomical terms. The same holds for years, so a day may
+/// span two calendar years; a day belongs to the year in which it *started*.
+///
+/// The first day of the calendar starts at the same instant as the first year.
+///
+/// A [Day] tracks epoch milliseconds through the final point of this day and the
+/// previous day for length calculations. Internally it uses **epoch day**:
+/// which day since the start of the calendar (1-based), independent of year.
+///
+/// [Day] is immutable: mutation methods return new instances.
 final class Day extends CalendarObject implements Comparable<Day> {
   Day._(this._epochDay, super.calendarKey)
     : _epochMilliseconds = MillisecondStore.store()
@@ -67,84 +86,131 @@ final class Day extends CalendarObject implements Comparable<Day> {
   final int _epochMilliseconds;
   final int _epochMillisecondsPreviousDay;
 
+  /// Same calendar day-of-year, [yearsToSubtract] years earlier.
+  ///
+  /// Throws [LukashianException] if the result would be before the calendar
+  /// start or the target year has no such day number.
   Day minusYears(int yearsToSubtract) =>
       Day.of(getYear().minusYears(yearsToSubtract), getDayNumber());
+
+  /// Same calendar day-of-year, [yearsToAdd] years later.
+  ///
+  /// Throws [LukashianException] if the target year has no such day number.
   Day plusYears(int yearsToAdd) =>
       Day.of(getYear().plusYears(yearsToAdd), getDayNumber());
 
+  /// This day minus [daysToSubtract] epoch days (may change year).
+  ///
+  /// Throws [LukashianException] if the result would be before day 1.
   Day minusDays(int daysToSubtract) {
     if (daysToSubtract < 0) return plusDays(-daysToSubtract);
     return Day.ofEpoch(_epochDay - daysToSubtract, calendarKey);
   }
 
+  /// This day plus [daysToAdd] epoch days (may change year).
   Day plusDays(int daysToAdd) {
     if (daysToAdd < 0) return minusDays(-daysToAdd);
     return Day.ofEpoch(_epochDay + daysToAdd, calendarKey);
   }
 
+  /// The previous calendar day.
+  ///
+  /// Throws [LukashianException] if that would be before day 1.
   Day previous() => minusDays(1);
+
+  /// The next calendar day.
   Day next() => plusDays(1);
 
+  /// The [Instant] after [proportionOfDay] of this day has passed.
+  ///
+  /// Throws [LukashianException] if [proportionOfDay] is not in `[0, 1)`.
   Instant atTime(Fraction proportionOfDay) => Instant.of(this, proportionOfDay);
+
+  /// The [Instant] after [beeps] beeps of this day have passed (0–9999).
+  ///
+  /// Same as Java `Day.atTime(int beeps)`.
   Instant atTimeBeeps(int beeps) => Instant.ofBeeps(this, beeps);
 
+  /// The first [Instant] of this day.
   Instant firstInstant() =>
       Instant.ofEpoch(getEpochMillisecondsAtStartOfDay(), calendarKey);
+
+  /// The last [Instant] of this day.
   Instant lastInstant() => Instant.ofEpoch(_epochMilliseconds, calendarKey);
 
+  /// Whether this day is strictly before [other].
   bool isBefore(Day other) {
     checkSameKeyAs(other);
     return _epochDay < other._epochDay;
   }
 
+  /// Whether this day is the same as or before [other].
   bool isSameOrBefore(Day other) {
     checkSameKeyAs(other);
     return _epochDay <= other._epochDay;
   }
 
+  /// Whether this day is strictly after [other].
   bool isAfter(Day other) {
     checkSameKeyAs(other);
     return _epochDay > other._epochDay;
   }
 
+  /// Whether this day is the same as or after [other].
   bool isSameOrAfter(Day other) {
     checkSameKeyAs(other);
     return _epochDay >= other._epochDay;
   }
 
+  /// Whether [instant]'s day equals this [Day].
   bool contains(Instant instant) {
     checkSameKeyAs(instant);
     return this == instant.getDay();
   }
 
+  /// The negation of [contains].
   bool containsNot(Instant instant) {
     checkSameKeyAs(instant);
     return !contains(instant);
   }
 
+  /// Whether this day started in [year] (see [Year.contains]).
   bool isIn(Year year) {
     checkSameKeyAs(year);
     return year.contains(this);
   }
 
+  /// The negation of [isIn].
   bool isNotIn(Year year) {
     checkSameKeyAs(year);
     return year.containsNot(this);
   }
 
+  /// Milliseconds from the start of this day through its final point.
   int lengthInMilliseconds() =>
       _epochMilliseconds - _epochMillisecondsPreviousDay;
+
+  /// Epoch day: days since the Lukashian epoch (1-based).
   int getEpochDay() => _epochDay;
+
+  /// Milliseconds from the Lukashian epoch through the final point of this day.
   int getEpochMilliseconds() => _epochMilliseconds;
+
+  /// Milliseconds through the final point of the previous day.
   int getEpochMillisecondsPreviousDay() => _epochMillisecondsPreviousDay;
+
+  /// Milliseconds through the first point of this day (or 1 for epoch day 1).
   int getEpochMillisecondsAtStartOfDay() => _epochMillisecondsPreviousDay + 1;
 
+  /// The year this day *starts* in.
   Year getYear() => Year.of(
     MillisecondStore.store()
         .data(calendarKey)
         .getYearForEpochMilliseconds(getEpochMillisecondsAtStartOfDay()),
     calendarKey,
   );
+
+  /// The year this day's final instant falls in (may differ from [getYear]).
   Year getEndYear() => Year.of(
     MillisecondStore.store()
         .data(calendarKey)
@@ -152,19 +218,25 @@ final class Day extends CalendarObject implements Comparable<Day> {
     calendarKey,
   );
 
+  /// Day-of-year number within [getYear] (1-based).
   int getDayNumber() {
     final firstEpochDayOfYear = _getFirstDayOfYearInEpochForm(getYear());
     return (_epochDay - firstEpochDayOfYear) + 1;
   }
 
+  /// Length of one beep (1/10000 of a day) as a [Fraction] of milliseconds.
   Fraction getLengthOfBeepInMilliseconds() =>
       Fraction(lengthInMilliseconds(), Instant.beepsPerDay);
 
+  /// Epoch-day difference: positive if this day is after [other].
   int differenceWith(Day other) {
     checkSameKeyAs(other);
     return _epochDay - other._epochDay;
   }
 
+  /// Creates a [Day] for epoch day [epochDay] and optional [calendarKey].
+  ///
+  /// See [CalendarKeys], [MillisecondStore].
   static Day ofEpoch(int epochDay, [int? calendarKey]) {
     LukashianException.check(
       epochDay >= 1,
@@ -174,6 +246,9 @@ final class Day extends CalendarObject implements Comparable<Day> {
     return Day._(epochDay, key);
   }
 
+  /// Creates a [Day] for [day] within [year].
+  ///
+  /// Throws [LukashianException] if [day] is out of range for [year].
   static Day of(Year year, int day) {
     LukashianException.check(
       day >= 1,
@@ -187,11 +262,13 @@ final class Day extends CalendarObject implements Comparable<Day> {
     return Day.ofEpoch((firstEpochDayOfYear + day) - 1, year.getCalendarKey());
   }
 
+  /// [Day.of] with a numeric [year] and optional [calendarKey].
   static Day ofYearDay(int year, int day, [int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     return Day.of(Year.of(year, key), day);
   }
 
+  /// Today's [Day] for optional [calendarKey].
   static Day now([int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final store = MillisecondStore.store();

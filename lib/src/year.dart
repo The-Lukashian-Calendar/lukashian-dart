@@ -50,6 +50,24 @@ import 'lukashian_exception.dart';
 import 'store/millisecond_store.dart';
 
 /// Represents a year in the Lukashian Calendar Mechanism.
+///
+/// The first year is year 1; years before year 1 are not defined (consistent
+/// with days, which also start at 1). Numbering fits designation of years
+/// better than mere counting.
+///
+/// By definition, the exact point at which a year starts belongs to that year,
+/// not the previous year, which ends at that point. So a year runs from its
+/// start (inclusive) to its end (exclusive).
+///
+/// Year length in milliseconds is not constant; it reflects the actual length
+/// of that year in astronomical terms. The same holds for days, so a day may
+/// span two years; a day belongs to the year in which it *started*.
+///
+/// A [Year] tracks epoch milliseconds from the Lukashian epoch through the final
+/// point of this year, and the epoch milliseconds of the previous year for
+/// length calculations.
+///
+/// [Year] is immutable: mutation methods return new instances.
 final class Year extends CalendarObject implements Comparable<Year> {
   Year._(this._year, super.calendarKey)
     : _epochMilliseconds = MillisecondStore.store()
@@ -65,21 +83,37 @@ final class Year extends CalendarObject implements Comparable<Year> {
   final int _epochMilliseconds;
   final int _epochMillisecondsPreviousYear;
 
+  /// Returns a new [Year] that represents this year minus [yearsToSubtract].
+  ///
+  /// Throws [LukashianException] when the result would be year 0 or lower.
   Year minusYears(int yearsToSubtract) {
     if (yearsToSubtract < 0) return plusYears(-yearsToSubtract);
     return Year.of(_year - yearsToSubtract, calendarKey);
   }
 
+  /// Returns a new [Year] that represents this year plus [yearsToAdd].
   Year plusYears(int yearsToAdd) {
     if (yearsToAdd < 0) return minusYears(-yearsToAdd);
     return Year.of(_year + yearsToAdd, calendarKey);
   }
 
+  /// Returns the preceding year.
+  ///
+  /// Throws [LukashianException] when the result would be year 0 or lower.
   Year previous() => minusYears(1);
+
+  /// Returns the succeeding year.
   Year next() => plusYears(1);
 
+  /// The [Day] in this year with the given [day] number.
+  ///
+  /// Throws [LukashianException] when [day] does not exist in this year.
   Day atDay(int day) => Day.of(this, day);
+
+  /// The first [Day] of this year.
   Day firstDay() => Day.of(this, 1);
+
+  /// The last [Day] of this year (may end in the next year).
   Day lastDay() => Day.ofEpoch(
     MillisecondStore.store()
         .data(calendarKey)
@@ -87,30 +121,47 @@ final class Year extends CalendarObject implements Comparable<Year> {
     calendarKey,
   );
 
+  /// The first [Instant] of this year (not necessarily at the start of a day).
   Instant firstInstant() =>
       Instant.ofEpoch(getEpochMillisecondsAtStartOfYear(), calendarKey);
+
+  /// The last [Instant] of this year (not necessarily at the end of a day).
   Instant lastInstant() => Instant.ofEpoch(getEpochMilliseconds(), calendarKey);
 
+  /// Whether this year is strictly before [other].
   bool isBefore(Year other) {
     checkSameKeyAs(other);
     return _year < other._year;
   }
 
+  /// Whether this year is the same as or before [other].
   bool isSameOrBefore(Year other) {
     checkSameKeyAs(other);
     return _year <= other._year;
   }
 
+  /// Whether this year is strictly after [other].
   bool isAfter(Year other) {
     checkSameKeyAs(other);
     return _year > other._year;
   }
 
+  /// Whether this year is the same as or after [other].
   bool isSameOrAfter(Year other) {
     checkSameKeyAs(other);
     return _year >= other._year;
   }
 
+  /// Whether [other] lies in this year.
+  ///
+  /// For a [Day], this is true if the day started in this year. For an
+  /// [Instant], the instant must fall between [getEpochMillisecondsAtStartOfYear]
+  /// and [getEpochMilliseconds] inclusive — note that the instant's [Day] may
+  /// still start in this year while the instant falls in the next year if that
+  /// day ends after the year ends.
+  ///
+  /// The Java API has separate `contains(Day)` and `contains(Instant)` methods;
+  /// Dart uses one [CalendarObject] parameter.
   bool contains(CalendarObject other) {
     checkSameKeyAs(other);
     if (other is Day) return this == other.getYear();
@@ -122,24 +173,41 @@ final class Year extends CalendarObject implements Comparable<Year> {
     return false;
   }
 
+  /// The negation of [contains].
   bool containsNot(CalendarObject other) {
     checkSameKeyAs(other);
     return !contains(other);
   }
 
+  /// Total milliseconds from the start of this year through its final point.
   int lengthInMilliseconds() =>
       _epochMilliseconds - _epochMillisecondsPreviousYear;
+
+  /// Number of days in this year ([lastDay]'s day number).
   int getNumberOfDays() => lastDay().getDayNumber();
+
+  /// This year's numeric designation (1-based).
   int getYearNumber() => _year;
+
+  /// Milliseconds from the Lukashian epoch through the final point of this year.
   int getEpochMilliseconds() => _epochMilliseconds;
+
+  /// Milliseconds through the final point of the previous year, or 0 for year 1.
   int getEpochMillisecondsPreviousYear() => _epochMillisecondsPreviousYear;
+
+  /// Milliseconds through the first point of this year, or 1 for year 1.
   int getEpochMillisecondsAtStartOfYear() => _epochMillisecondsPreviousYear + 1;
 
+  /// Difference of year numbers: positive if this year is after [other].
   int differenceWith(Year other) {
     checkSameKeyAs(other);
     return _year - other._year;
   }
 
+  /// Creates a [Year] for [year] and optional [calendarKey] (default: store default).
+  ///
+  /// See [CalendarKeys], [MillisecondStore]. Throws [LukashianException] for
+  /// invalid year or unregistered key.
   static Year of(int year, [int? calendarKey]) {
     LukashianException.check(
       year >= 1,
@@ -151,6 +219,7 @@ final class Year extends CalendarObject implements Comparable<Year> {
     );
   }
 
+  /// The current [Year] for optional [calendarKey] (default: store default).
   static Year now([int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final store = MillisecondStore.store();

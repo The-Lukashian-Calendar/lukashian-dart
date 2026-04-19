@@ -9,10 +9,17 @@ import 'dart:typed_data';
 
 import '../external_resource_millisecond_store_data_provider.dart';
 
-/// Loads epoch data from HTTP(S) URLs. Base URL should end with a path separator;
-/// extensions are appended as-is.
+/// Loads binary epoch millisecond streams over HTTP(S) using `dart:io`
+/// [HttpClient].
+///
+/// See [ExternalResourceMillisecondStoreDataProvider] for URL layout and binary
+/// format.
+///
+/// **Platform note:** uses `dart:io` and is only available on the Dart VM (not
+/// on web). The Java library uses the JDK HTTP client instead.
 class HttpMillisecondStoreDataProvider
     extends ExternalResourceMillisecondStoreDataProvider {
+  /// Same as [ExternalResourceMillisecondStoreDataProvider] constructor.
   HttpMillisecondStoreDataProvider(
     super.baseLocation,
     super.unixEpochOffsetExtension,
@@ -20,8 +27,8 @@ class HttpMillisecondStoreDataProvider
     super.dayEpochMillisecondsExtension,
   );
 
-  // note: cannot use super.baseLocation - would mix super parameter with positional super call.
-  // ignore: use_super_parameters
+  /// Same as [ExternalResourceMillisecondStoreDataProvider.withDefaults].
+  // ignore: use_super_parameters — explicit forward matches original pattern.
   HttpMillisecondStoreDataProvider.withDefaults(String baseLocation)
     : super.withDefaults(baseLocation);
 

@@ -8,10 +8,16 @@ import 'dart:io';
 
 import '../external_resource_millisecond_store_data_provider.dart';
 
-/// Loads epoch data from files. Base path should end with a path separator;
-/// extensions are appended as-is (e.g. "unixEpochOffset").
+/// Loads binary epoch millisecond streams from the local filesystem.
+///
+/// See [ExternalResourceMillisecondStoreDataProvider] for format and path rules.
+///
+/// Useful when you want the same data as [StandardEarthHttpMillisecondStoreDataProvider]
+/// but offline: download the default resources from the same URLs (e.g. with
+/// `curl`) into a directory whose path you pass as [baseLocation].
 class FileMillisecondStoreDataProvider
     extends ExternalResourceMillisecondStoreDataProvider {
+  /// Same as [ExternalResourceMillisecondStoreDataProvider] constructor.
   FileMillisecondStoreDataProvider(
     super.baseLocation,
     super.unixEpochOffsetExtension,
@@ -19,8 +25,8 @@ class FileMillisecondStoreDataProvider
     super.dayEpochMillisecondsExtension,
   );
 
-  // note: cannot use super.baseLocation - would mix super parameter with positional super call.
-  // ignore: use_super_parameters
+  /// Same as [ExternalResourceMillisecondStoreDataProvider.withDefaults].
+  // ignore: use_super_parameters — explicit forward matches original pattern.
   FileMillisecondStoreDataProvider.withDefaults(String baseLocation)
     : super.withDefaults(baseLocation);
 

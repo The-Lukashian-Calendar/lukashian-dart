@@ -6,9 +6,15 @@
 
 import '../millisecond_store_data_provider.dart';
 
-/// Stub for the computed Standard Earth calendar provider.
-/// Use [StandardEarthHttpMillisecondStoreDataProvider] to load Earth data from lukashian.org,
-/// or implement [MillisecondStoreDataProvider] yourself.
+/// An implementation of [MillisecondStoreDataProvider] that implements the
+/// Lukashian Calendar Mechanism for Earth: tropical (southern-solstice to
+/// southern-solstice) years, true solar days, TT-based, with year numbers
+/// roughly 3900 above the Gregorian calendar — see the Java class
+/// `StandardEarthMillisecondStoreDataProvider` for the full specification.
+///
+/// **Dart port:** this class is a stub; every method throws [UnimplementedError].
+/// Use [StandardEarthHttpMillisecondStoreDataProvider] to load the same data
+/// from lukashian.org, or provide your own [MillisecondStoreDataProvider].
 class StandardEarthMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
   @override
   Future<int> loadUnixEpochOffsetMilliseconds() async {

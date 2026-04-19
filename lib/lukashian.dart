@@ -1,4 +1,12 @@
-/// The Lukashian Calendar – Dart implementation.
+/// The Lukashian Calendar — Dart implementation of The Lukashian Calendar
+/// Mechanism.
+///
+/// Core types ([Year], [Day], [Instant]) are calendar-key aware; load epoch
+/// data via [MillisecondStore] and [MillisecondStoreDataProvider] before use.
+///
+/// See [lukashian.org](https://www.lukashian.org) for the calendar itself.
+/// For differences from the Java reference library, see the README section
+/// *Deviations from the Java reference implementation*.
 library;
 
 export 'src/calendar_object.dart';
