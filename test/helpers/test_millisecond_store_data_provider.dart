@@ -70,7 +70,7 @@ class TestMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
 }
 
 /// Deterministic provider with fixed offset. Same year/day structure as
-/// [TestMillisecondStoreDataProvider]. Used for [LukashianInstant.toCalendar] tests
+/// [TestMillisecondStoreDataProvider]. Used for [Instant.toCalendar] tests
 /// where we need exactly-known offset differences.
 class ConstantOffsetTestProvider implements MillisecondStoreDataProvider {
   ConstantOffsetTestProvider(this.offsetMilliseconds);
