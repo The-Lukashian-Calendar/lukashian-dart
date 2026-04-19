@@ -45,10 +45,7 @@
 
 import 'dart:async';
 
-import '../lukashian_exception.dart';
-import 'calendar_keys.dart';
-import 'millisecond_store_data.dart';
-import 'millisecond_store_data_provider.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// Singleton that manages the various instances of the Lukashian Calendar. Each
 /// instance is implemented by a [MillisecondStoreDataProvider].

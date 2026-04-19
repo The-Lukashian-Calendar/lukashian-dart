@@ -43,11 +43,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import 'calendar_object.dart';
-import 'day.dart';
-import 'instant.dart';
-import 'lukashian_exception.dart';
-import 'store/millisecond_store.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// Represents a year in the Lukashian Calendar Mechanism.
 ///

@@ -6,7 +6,7 @@
 
 import 'dart:io';
 
-import '../external_resource_millisecond_store_data_provider.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// Loads binary epoch millisecond streams from the local filesystem.
 ///

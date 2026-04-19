@@ -6,9 +6,7 @@
 
 import 'package:fraction/fraction.dart';
 
-import 'day.dart';
-import 'instant.dart';
-import 'year.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// The different ways to format a [Day] (see [Formatter.formatDay]).
 enum DayFormat {

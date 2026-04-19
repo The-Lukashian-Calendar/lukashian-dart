@@ -5,9 +5,9 @@
  */
 
 import 'package:fraction/fraction.dart';
-import 'package:lukashian/lukashian.dart';
 import 'package:test/test.dart';
 
+import 'package:lukashian/lukashian.dart';
 import 'helpers/lukashian_assert.dart';
 import 'helpers/test_millisecond_store_data_provider.dart';
 
@@ -34,7 +34,7 @@ void main() {
     await store.ensureLoaded(_toCalendarTargetKey);
   });
 
-  group('LukashianInstant', () {
+  group('Instant', () {
     test('testMinusYears', () {
       final instant = Instant.ofEpoch(4050, testCalendarKey);
       assertLukashianException(() => instant.minusYears(1));

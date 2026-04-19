@@ -43,9 +43,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import 'package:lukashian/src/store/millisecond_store.dart';
 import 'package:test/test.dart';
 
+import 'package:lukashian/lukashian.dart';
 import '../helpers/lukashian_assert.dart';
 import '../helpers/test_millisecond_store_data_provider.dart';
 
@@ -86,18 +86,24 @@ void main() {
     expect(counter, 3);
   });
 
-  test('concurrent ensureLoaded for same key deduplicates provider fetches', () async {
-    var loadCount = 0;
-    final provider = _DelayedCountingProvider(() => loadCount++);
+  test(
+    'concurrent ensureLoaded for same key deduplicates provider fetches',
+    () async {
+      var loadCount = 0;
+      final provider = _DelayedCountingProvider(() => loadCount++);
 
-    store.registerProvider(testCalendarKey + 2, provider);
+      store.registerProvider(testCalendarKey + 2, provider);
 
-    // Fire multiple concurrent ensureLoaded calls before any can complete.
-    final futures = List.generate(10, (_) => store.ensureLoaded(testCalendarKey + 2));
-    await Future.wait(futures);
+      // Fire multiple concurrent ensureLoaded calls before any can complete.
+      final futures = List.generate(
+        10,
+        (_) => store.ensureLoaded(testCalendarKey + 2),
+      );
+      await Future.wait(futures);
 
-    expect(loadCount, 1);
-  });
+      expect(loadCount, 1);
+    },
+  );
 }
 
 class _CountingTestProvider extends TestMillisecondStoreDataProvider {

@@ -43,7 +43,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import '../lukashian_exception.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// For each [Day] and [Year], stores the number of milliseconds between the
 /// start of the calendar (the Lukashian epoch) and the end of that day or year.
@@ -71,10 +71,10 @@ class MillisecondStoreData {
     required int unixEpochOffsetMilliseconds,
     required List<int> yearEpochMilliseconds,
     required List<int> dayEpochMilliseconds,
-  })  : _unixEpochOffsetMilliseconds = unixEpochOffsetMilliseconds,
-        _yearEpochMilliseconds = List<int>.unmodifiable(yearEpochMilliseconds),
-        _dayEpochMilliseconds = List<int>.unmodifiable(dayEpochMilliseconds),
-        _unixTimestampsWithLeapSecond = _getUnixTimestampsWithLeapSecond();
+  }) : _unixEpochOffsetMilliseconds = unixEpochOffsetMilliseconds,
+       _yearEpochMilliseconds = List<int>.unmodifiable(yearEpochMilliseconds),
+       _dayEpochMilliseconds = List<int>.unmodifiable(dayEpochMilliseconds),
+       _unixTimestampsWithLeapSecond = _getUnixTimestampsWithLeapSecond();
 
   final int _unixEpochOffsetMilliseconds;
   final List<int> _yearEpochMilliseconds;
@@ -92,7 +92,10 @@ class MillisecondStoreData {
   int getUnixEpochMilliseconds(int lukashianEpochMilliseconds) {
     final unixEpochMilliseconds =
         lukashianEpochMilliseconds - _unixEpochOffsetMilliseconds;
-    final index = _binarySearch(_unixTimestampsWithLeapSecond, unixEpochMilliseconds);
+    final index = _binarySearch(
+      _unixTimestampsWithLeapSecond,
+      unixEpochMilliseconds,
+    );
     final numberOfLeapSeconds = index >= 0 ? index + 1 : -index - 1;
     return unixEpochMilliseconds - (numberOfLeapSeconds * 1000);
   }
@@ -100,9 +103,14 @@ class MillisecondStoreData {
   /// Milliseconds from the start of the Lukashian calendar until the given
   /// UNIX epoch milliseconds.
   int getLukashianEpochMilliseconds(int unixEpochMilliseconds) {
-    final index = _binarySearch(_unixTimestampsWithLeapSecond, unixEpochMilliseconds);
+    final index = _binarySearch(
+      _unixTimestampsWithLeapSecond,
+      unixEpochMilliseconds,
+    );
     final numberOfLeapSeconds = index >= 0 ? index + 1 : -index - 1;
-    return unixEpochMilliseconds + (numberOfLeapSeconds * 1000) + _unixEpochOffsetMilliseconds;
+    return unixEpochMilliseconds +
+        (numberOfLeapSeconds * 1000) +
+        _unixEpochOffsetMilliseconds;
   }
 
   /// Milliseconds from the start of the Lukashian calendar until now.
@@ -121,7 +129,8 @@ class MillisecondStoreData {
     );
     LukashianException.check(
       year <= _yearEpochMilliseconds.length,
-      () => 'Year $year isn\'t supported yet by this Lukashian Calendar instance',
+      () =>
+          'Year $year isn\'t supported yet by this Lukashian Calendar instance',
     );
     return _yearEpochMilliseconds[year - 1];
   }
@@ -137,7 +146,8 @@ class MillisecondStoreData {
     );
     LukashianException.check(
       epochDay <= _dayEpochMilliseconds.length,
-      () => 'Epoch day $epochDay isn\'t supported yet by this Lukashian Calendar instance',
+      () =>
+          'Epoch day $epochDay isn\'t supported yet by this Lukashian Calendar instance',
     );
     return _dayEpochMilliseconds[epochDay - 1];
   }
@@ -153,7 +163,8 @@ class MillisecondStoreData {
     );
     LukashianException.check(
       epochMilliseconds <= _yearEpochMilliseconds.last,
-      () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
+      () =>
+          'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
     );
     final index = _binarySearch(_yearEpochMilliseconds, epochMilliseconds);
     return index >= 0 ? index + 1 : -index;
@@ -170,7 +181,8 @@ class MillisecondStoreData {
     );
     LukashianException.check(
       epochMilliseconds <= _dayEpochMilliseconds.last,
-      () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
+      () =>
+          'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
     );
     final index = _binarySearch(_dayEpochMilliseconds, epochMilliseconds);
     return index >= 0 ? index + 1 : -index;

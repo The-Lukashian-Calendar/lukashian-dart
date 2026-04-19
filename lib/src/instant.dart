@@ -45,11 +45,7 @@
 
 import 'package:fraction/fraction.dart';
 
-import 'calendar_object.dart';
-import 'day.dart';
-import 'lukashian_exception.dart';
-import 'store/millisecond_store.dart';
-import 'year.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// A unique millisecond on the Lukashian timeline (millisecond 1 is the first).
 /// Also represents time-of-day as a [Fraction] — the proportion of the current

@@ -6,7 +6,7 @@
 
 import 'dart:typed_data';
 
-import '../../millisecond_store_data_provider.dart';
+import 'package:lukashian/lukashian.dart';
 
 /// Base functionality for loading epoch millisecond arrays from an external
 /// resource (file or URL), so the exact numbers can be maintained centrally.
@@ -30,15 +30,18 @@ import '../../millisecond_store_data_provider.dart';
 /// HTTP, etc.).
 ///
 /// See also [FileMillisecondStoreDataProvider], [HttpMillisecondStoreDataProvider].
-abstract class ExternalResourceMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
+abstract class ExternalResourceMillisecondStoreDataProvider
+    implements MillisecondStoreDataProvider {
   /// Default extension for [loadUnixEpochOffsetMilliseconds] (one 8-byte value).
   static const String defaultUnixEpochOffsetExtension = 'unixEpochOffset';
 
   /// Default extension for [loadYearEpochMilliseconds].
-  static const String defaultYearEpochMillisecondsExtension = 'yearEpochMilliseconds';
+  static const String defaultYearEpochMillisecondsExtension =
+      'yearEpochMilliseconds';
 
   /// Default extension for [loadDayEpochMilliseconds].
-  static const String defaultDayEpochMillisecondsExtension = 'dayEpochMilliseconds';
+  static const String defaultDayEpochMillisecondsExtension =
+      'dayEpochMilliseconds';
 
   /// Creates a provider that loads from [baseLocation] with the given
   /// [unixEpochOffsetExtension], [yearEpochMillisecondsExtension], and
@@ -57,12 +60,12 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
   ///
   /// **The base location must end with a path separator.**
   ExternalResourceMillisecondStoreDataProvider.withDefaults(String baseLocation)
-      : this(
-          baseLocation,
-          defaultUnixEpochOffsetExtension,
-          defaultYearEpochMillisecondsExtension,
-          defaultDayEpochMillisecondsExtension,
-        );
+    : this(
+        baseLocation,
+        defaultUnixEpochOffsetExtension,
+        defaultYearEpochMillisecondsExtension,
+        defaultDayEpochMillisecondsExtension,
+      );
 
   /// Base URL or directory, ending with `/` or the platform path separator.
   final String baseLocation;
@@ -91,7 +94,9 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
   }
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
+  Future<List<int>> loadDayEpochMilliseconds(
+    List<int> yearEpochMilliseconds,
+  ) async {
     return _loadMilliseconds(dayEpochMillisecondsExtension);
   }
 
@@ -99,7 +104,9 @@ abstract class ExternalResourceMillisecondStoreDataProvider implements Milliseco
     try {
       final bytes = await loadMillisecondsByteArray(baseLocation + extension);
       if (bytes.isEmpty) {
-        throw Exception("No bytes could be loaded from '$baseLocation$extension'");
+        throw Exception(
+          "No bytes could be loaded from '$baseLocation$extension'",
+        );
       }
       if (bytes.length % 8 != 0) {
         throw ArgumentError(
