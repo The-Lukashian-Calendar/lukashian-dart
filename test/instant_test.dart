@@ -34,6 +34,14 @@ void main() {
     await store.ensureLoaded(_toCalendarTargetKey);
   });
 
+  tearDownAll(() {
+    final store = MillisecondStore.store();
+    store.clearData(testCalendarKey);
+    store.clearData(CalendarKeys.earth);
+    store.clearData(_toCalendarSourceKey);
+    store.clearData(_toCalendarTargetKey);
+  });
+
   group('Instant', () {
     test('testMinusYears', () {
       final instant = Instant.ofEpoch(4050, testCalendarKey);
