@@ -98,14 +98,17 @@ void main(List<String> args) async {
 
     await _run(calendarKey: calendarKey, isoDate: isoDate);
   } on FormatException catch (e) {
-    print('Error: ${e.message}');
+    stderr.writeln('Error: ${e.message}');
     _printHelp();
     exit(1);
   } on LukashianException catch (e) {
-    print('Error: $e');
+    stderr.writeln('Error: $e');
     exit(1);
   } on StateError catch (e) {
-    print('Error: $e');
+    stderr.writeln('Error: $e');
+    exit(1);
+  } on Exception catch (e) {
+    stderr.writeln('Error: $e');
     exit(1);
   }
 }
