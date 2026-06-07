@@ -43,20 +43,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/// Int keys that represent the various [MillisecondStoreDataProvider]s.
-/// When registering your own provider in [MillisecondStore], avoid using these values.
+/// Keys that represent the various [MillisecondStoreDataProvider]s.
+///
+/// When registering your own provider in [MillisecondStore], it is not
+/// advisable to use one of the int values listed here.
+///
+/// See also [MillisecondStoreDataProvider].
 class CalendarKeys {
   CalendarKeys._();
 
-  /// Represents the Standard Earth (computed) provider.
+  /// [StandardEarthMillisecondStoreDataProvider].
   static const int earth = 1;
 
-  /// Represents the Standard Earth HTTP provider (lukashian.org).
+  /// [StandardEarthHttpMillisecondStoreDataProvider].
   static const int earthHttpLukashianOrg = 2;
 
-  /// Represents the Standard Mars (computed) provider.
+  /// [StandardMarsMillisecondStoreDataProvider].
   static const int mars = 3;
 
-  /// Represents the Standard Mars HTTP provider (lukashian.org).
+  /// [StandardMarsHttpMillisecondStoreDataProvider].
   static const int marsHttpLukashianOrg = 4;
 }

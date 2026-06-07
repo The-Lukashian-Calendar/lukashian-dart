@@ -4,12 +4,19 @@
  * (License header abbreviated.)
  */
 
-import '../millisecond_store_data_provider.dart';
+import 'package:lukashian/lukashian.dart';
 
-/// Stub for the computed Standard Mars calendar provider.
-/// Use [StandardMarsHttpMillisecondStoreDataProvider] to load Mars data from lukashian.org,
-/// or implement [MillisecondStoreDataProvider] yourself.
-class StandardMarsMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
+/// An implementation of [MillisecondStoreDataProvider] that implements the
+/// Lukashian Calendar Mechanism for Mars: tropical years and true solar sols,
+/// southern-solstice based — see the Java class
+/// `StandardMarsMillisecondStoreDataProvider` for the full specification
+/// (epoch choice, Pathfinder-related constraints, etc.).
+///
+/// **Dart port:** this class is a stub; every method throws [UnimplementedError].
+/// Use [StandardMarsHttpMillisecondStoreDataProvider] to load data from
+/// lukashian.org, or provide your own [MillisecondStoreDataProvider].
+class StandardMarsMillisecondStoreDataProvider
+    implements MillisecondStoreDataProvider {
   @override
   Future<int> loadUnixEpochOffsetMilliseconds() async {
     throw UnimplementedError(
@@ -27,7 +34,9 @@ class StandardMarsMillisecondStoreDataProvider implements MillisecondStoreDataPr
   }
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
+  Future<List<int>> loadDayEpochMilliseconds(
+    List<int> yearEpochMilliseconds,
+  ) async {
     throw UnimplementedError(
       'StandardMarsMillisecondStoreDataProvider is not implemented; '
       'use StandardMarsHttpMillisecondStoreDataProvider or provide your own data',

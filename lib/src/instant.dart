@@ -45,86 +45,170 @@
 
 import 'package:fraction/fraction.dart';
 
-import 'calendar_object.dart';
-import 'day.dart';
-import 'lukashian_exception.dart';
-import 'store/millisecond_store.dart';
-import 'year.dart';
+import 'package:lukashian/lukashian.dart';
 
-/// Represents a unique millisecond on the Lukashian timeline; also represents time-of-day as proportion (0..1) or beeps (0..9999).
-final class LukashianInstant extends CalendarObject implements Comparable<LukashianInstant> {
-  LukashianInstant._(this._day, this._proportionOfDay, super.calendarKey);
+/// A unique millisecond on the Lukashian timeline (millisecond 1 is the first).
+/// Also represents time-of-day as a [Fraction] — the proportion of the current
+/// [Day] that has passed — or as **beeps** (basis points, 0–9999); see
+/// <https://en.wikipedia.org/wiki/Basis_point>.
+///
+/// Translating proportion to a concrete millisecond uses a “wheel of fortune”
+/// rule: the proportion picks a segment; boundaries belong to the *next*
+/// millisecond. So an [Instant] includes the start of its millisecond and
+/// excludes the end (`[m, m+1)` in millisecond index terms).
+///
+/// Translating a millisecond back to proportion uses the proportion from the
+/// start of the day up to the *start* of that millisecond (the millisecond is
+/// not considered fully passed), so the last millisecond of a day has
+/// proportion &lt; 1 — consistent with [Day] running `[start, end)`.
+///
+/// Internally, [Instant] stores [getDay] and [getProportionOfDay], not the
+/// timeline millisecond, so round-trips through beeps stay stable (see Java
+/// `Instant` javadoc).
+///
+/// [Object.==], [hashCode], and [compareTo] use the timeline millisecond, not
+/// the stored proportion alone.
+///
+/// **Naming:** the Java type is `Instant`; this Dart library uses [Instant]
+/// (not `DateTime`) to avoid clashing with Dart's [DateTime].
+///
+/// [Instant] is immutable.
+final class Instant extends CalendarObject implements Comparable<Instant> {
+  Instant._(this._day, this._proportionOfDay, super.calendarKey);
 
+  /// Beeps per day (basis points scale). Same as Java `BEEPS_PER_DAY`.
   static const int beepsPerDay = 10000;
 
   final Day _day;
   final Fraction _proportionOfDay;
 
-  LukashianInstant minusYears(int yearsToSubtract) => LukashianInstant.of(_day.minusYears(yearsToSubtract), _proportionOfDay);
-  LukashianInstant plusYears(int yearsToAdd) => LukashianInstant.of(_day.plusYears(yearsToAdd), _proportionOfDay);
-  LukashianInstant minusDays(int daysToSubtract) => LukashianInstant.of(_day.minusDays(daysToSubtract), _proportionOfDay);
-  LukashianInstant plusDays(int daysToAdd) => LukashianInstant.of(_day.plusDays(daysToAdd), _proportionOfDay);
-  LukashianInstant atPreviousDay() => minusDays(1);
-  LukashianInstant atNextDay() => plusDays(1);
+  /// This instant's time-of-day on [day] minus [yearsToSubtract] years.
+  ///
+  /// Throws [LukashianException] if [Day.minusYears] would fail.
+  Instant minusYears(int yearsToSubtract) =>
+      Instant.of(_day.minusYears(yearsToSubtract), _proportionOfDay);
 
-  LukashianInstant minusMilliseconds(int millisecondsToSubtract) {
-    if (millisecondsToSubtract < 0) return plusMilliseconds(-millisecondsToSubtract);
-    return LukashianInstant.ofEpoch(getEpochMilliseconds() - millisecondsToSubtract, calendarKey);
+  /// This instant's time-of-day on [day] plus [yearsToAdd] years.
+  Instant plusYears(int yearsToAdd) =>
+      Instant.of(_day.plusYears(yearsToAdd), _proportionOfDay);
+
+  /// This instant's time-of-day on a day [daysToSubtract] days earlier.
+  ///
+  /// Throws [LukashianException] if that would precede the calendar start.
+  Instant minusDays(int daysToSubtract) =>
+      Instant.of(_day.minusDays(daysToSubtract), _proportionOfDay);
+
+  /// This instant's time-of-day on a day [daysToAdd] days later.
+  Instant plusDays(int daysToAdd) =>
+      Instant.of(_day.plusDays(daysToAdd), _proportionOfDay);
+
+  /// Same instant time-of-day on the previous calendar day (`minusDays(1)`).
+  Instant atPreviousDay() => minusDays(1);
+
+  /// Same instant time-of-day on the next calendar day (`plusDays(1)`).
+  Instant atNextDay() => plusDays(1);
+
+  /// Minus [millisecondsToSubtract] timeline milliseconds.
+  ///
+  /// Throws [LukashianException] if the result would be before the calendar
+  /// start. Small changes may not change default beep formatting.
+  Instant minusMilliseconds(int millisecondsToSubtract) {
+    if (millisecondsToSubtract < 0) {
+      return plusMilliseconds(-millisecondsToSubtract);
+    }
+    return Instant.ofEpoch(
+      getEpochMilliseconds() - millisecondsToSubtract,
+      calendarKey,
+    );
   }
 
-  LukashianInstant minusSeconds(int secondsToSubtract) => minusMilliseconds(secondsToSubtract * 1000);
+  /// Same as [minusMilliseconds] with seconds × 1000.
+  Instant minusSeconds(int secondsToSubtract) =>
+      minusMilliseconds(secondsToSubtract * 1000);
 
-  LukashianInstant plusMilliseconds(int millisecondsToAdd) {
-    if (millisecondsToAdd < 0) return minusMilliseconds(-millisecondsToAdd);
-    return LukashianInstant.ofEpoch(getEpochMilliseconds() + millisecondsToAdd, calendarKey);
+  /// Plus [millisecondsToAdd] timeline milliseconds.
+  Instant plusMilliseconds(int millisecondsToAdd) {
+    if (millisecondsToAdd < 0) {
+      return minusMilliseconds(-millisecondsToAdd);
+    }
+    return Instant.ofEpoch(
+      getEpochMilliseconds() + millisecondsToAdd,
+      calendarKey,
+    );
   }
 
-  LukashianInstant plusSeconds(int secondsToAdd) => plusMilliseconds(secondsToAdd * 1000);
+  /// Same as [plusMilliseconds] with seconds × 1000.
+  Instant plusSeconds(int secondsToAdd) =>
+      plusMilliseconds(secondsToAdd * 1000);
 
-  LukashianInstant minusProportionOfDay(Fraction proportionToSubtract) {
-    if (_lessThan(proportionToSubtract, Fraction(0, 1))) return plusProportionOfDay(Fraction(0, 1) - proportionToSubtract);
+  /// Minus [proportionToSubtract] interpreted as **full days** where 1 = one
+  /// full day (may span variable-length days).
+  ///
+  /// Throws [LukashianException] if the result would be before the calendar
+  /// start.
+  Instant minusProportionOfDay(Fraction proportionToSubtract) {
+    if (_lessThan(proportionToSubtract, Fraction(0, 1))) {
+      return plusProportionOfDay(Fraction(0, 1) - proportionToSubtract);
+    }
     Fraction totalProportion = _proportionOfDay - proportionToSubtract;
-    int daysToSubtract = (Fraction(0, 1) - totalProportion).toDouble().truncate();
-    Fraction remainingProportion = totalProportion + Fraction(daysToSubtract, 1);
+    int daysToSubtract = (Fraction(0, 1) - totalProportion)
+        .toDouble()
+        .truncate();
+    Fraction remainingProportion =
+        totalProportion + Fraction(daysToSubtract, 1);
     if (_lessThan(remainingProportion, Fraction(0, 1))) {
       daysToSubtract++;
       remainingProportion = remainingProportion + Fraction(1, 1);
     }
-    return LukashianInstant.of(_day.minusDays(daysToSubtract), remainingProportion);
+    return Instant.of(_day.minusDays(daysToSubtract), remainingProportion);
   }
 
-  LukashianInstant minusBeeps(int beepsToSubtract) => minusProportionOfDay(Fraction(beepsToSubtract, beepsPerDay));
+  /// Minus [beepsToSubtract] beeps (each 1/[beepsPerDay] of a day).
+  Instant minusBeeps(int beepsToSubtract) =>
+      minusProportionOfDay(Fraction(beepsToSubtract, beepsPerDay));
 
-  LukashianInstant plusProportionOfDay(Fraction proportionToAdd) {
-    if (_lessThan(proportionToAdd, Fraction(0, 1))) return minusProportionOfDay(proportionToAdd.negate());
+  /// Plus [proportionToAdd] as full days (1 = one day).
+  Instant plusProportionOfDay(Fraction proportionToAdd) {
+    if (_lessThan(proportionToAdd, Fraction(0, 1))) {
+      return minusProportionOfDay(proportionToAdd.negate());
+    }
     Fraction totalProportion = _proportionOfDay + proportionToAdd;
     int daysToAdd = totalProportion.toDouble().truncate();
     Fraction remainingProportion = totalProportion - Fraction(daysToAdd, 1);
-    return LukashianInstant.of(_day.plusDays(daysToAdd), remainingProportion);
+    return Instant.of(_day.plusDays(daysToAdd), remainingProportion);
   }
 
-  LukashianInstant plusBeeps(int beepsToAdd) => plusProportionOfDay(Fraction(beepsToAdd, beepsPerDay));
+  /// Plus [beepsToAdd] beeps.
+  Instant plusBeeps(int beepsToAdd) =>
+      plusProportionOfDay(Fraction(beepsToAdd, beepsPerDay));
 
-  bool isBefore(LukashianInstant other) {
+  /// Timeline order: strictly before [other] (same calendar key).
+  bool isBefore(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds() < other.getEpochMilliseconds();
   }
 
-  bool isSameOrBefore(LukashianInstant other) {
+  /// Timeline order: same or before [other].
+  bool isSameOrBefore(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds() <= other.getEpochMilliseconds();
   }
 
-  bool isAfter(LukashianInstant other) {
+  /// Timeline order: strictly after [other].
+  bool isAfter(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds() > other.getEpochMilliseconds();
   }
 
-  bool isSameOrAfter(LukashianInstant other) {
+  /// Timeline order: same or after [other].
+  bool isSameOrAfter(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds() >= other.getEpochMilliseconds();
   }
 
+  /// Whether this instant lies in [other] ([Year] or [Day]).
+  ///
+  /// The Java API has `isIn(Year)` and `isIn(Day)` separately.
   bool isIn(CalendarObject other) {
     checkSameKeyAs(other);
     if (other is Year) return other.contains(this);
@@ -132,108 +216,185 @@ final class LukashianInstant extends CalendarObject implements Comparable<Lukash
     return false;
   }
 
+  /// The negation of [isIn].
   bool isNotIn(CalendarObject other) {
     checkSameKeyAs(other);
     return !isIn(other);
   }
 
+  /// The unique Lukashian timeline millisecond for this instant.
   int getEpochMilliseconds() {
     final millisecondsOfDay = _day.lengthInMilliseconds();
-    Fraction resultingMillisecond = Fraction(millisecondsOfDay, 1) * _proportionOfDay;
-    if (resultingMillisecond == Fraction(resultingMillisecond.toDouble().truncate(), 1)) {
+    Fraction resultingMillisecond =
+        Fraction(millisecondsOfDay, 1) * _proportionOfDay;
+    if (resultingMillisecond ==
+        Fraction(resultingMillisecond.toDouble().truncate(), 1)) {
       resultingMillisecond = resultingMillisecond + Fraction(1, 1);
     }
     final resultingMillisecondLong = resultingMillisecond.toDouble().ceil();
     return _day.getEpochMillisecondsPreviousDay() + resultingMillisecondLong;
   }
 
+  /// Same as [getEpochMilliseconds].
   int getMillisecond() => getEpochMilliseconds();
 
+  /// The stored proportion of the current day that has passed `[0, 1)`.
   Fraction getProportionOfDay() => _proportionOfDay;
+
+  /// This instant's calendar day.
   Day getDay() => _day;
 
-  Year getYear() => Year.of(MillisecondStore.store().data(calendarKey).getYearForEpochMilliseconds(getEpochMilliseconds()), calendarKey);
+  /// The [Year] containing this instant's timeline position (may differ from
+  /// [getDay].getYear() if the day ends in another year).
+  Year getYear() => Year.of(
+    MillisecondStore.store()
+        .data(calendarKey)
+        .getYearForEpochMilliseconds(getEpochMilliseconds()),
+    calendarKey,
+  );
 
-  int getBeeps() => (_proportionOfDay * Fraction(beepsPerDay, 1)).toDouble().truncate();
+  /// [getProportionOfDay] as beeps 0–9999 (truncated; see Java `Instant.getBeeps`).
+  int getBeeps() =>
+      (_proportionOfDay * Fraction(beepsPerDay, 1)).toDouble().truncate();
 
-  int getUnixEpochMilliseconds() => MillisecondStore.store().data(calendarKey).getUnixEpochMilliseconds(getEpochMilliseconds());
+  /// Milliseconds since the UNIX epoch for this instant (may be negative).
+  int getUnixEpochMilliseconds() => MillisecondStore.store()
+      .data(calendarKey)
+      .getUnixEpochMilliseconds(getEpochMilliseconds());
 
-  DateTime toDateTime() => DateTime.fromMillisecondsSinceEpoch(getUnixEpochMilliseconds(), isUtc: true);
+  /// Same instant as UTC [DateTime] (Java's `toJavaInstant()` equivalent).
+  DateTime toDateTime() => DateTime.fromMillisecondsSinceEpoch(
+    getUnixEpochMilliseconds(),
+    isUtc: true,
+  );
 
-  LukashianInstant toCalendar(int calendarKey) {
-    final offset = MillisecondStore.store().data(this.calendarKey).getUnixEpochOffsetMilliseconds();
-    final otherOffset = MillisecondStore.store().data(calendarKey).getUnixEpochOffsetMilliseconds();
+  /// Same absolute time on [calendarKey] (offsets differ per calendar).
+  Instant toCalendar(int calendarKey) {
+    final offset = MillisecondStore.store()
+        .data(this.calendarKey)
+        .getUnixEpochOffsetMilliseconds();
+    final otherOffset = MillisecondStore.store()
+        .data(calendarKey)
+        .getUnixEpochOffsetMilliseconds();
     final difference = offset - otherOffset;
-    return LukashianInstant.ofEpoch(getEpochMilliseconds() - difference, calendarKey);
+    return Instant.ofEpoch(getEpochMilliseconds() - difference, calendarKey);
   }
 
-  int differenceWith(LukashianInstant other) {
+  /// Millisecond difference on the timeline (positive if this is after
+  /// [other]).
+  int differenceWith(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds() - other.getEpochMilliseconds();
   }
 
-  int differenceInBeepsWith(LukashianInstant other) {
+  /// Difference in beeps (truncated); see Java javadoc for cross-day behavior.
+  int differenceInBeepsWith(Instant other) {
     checkSameKeyAs(other);
     final proportionDifference = _proportionOfDay - other.getProportionOfDay();
-    final beepDifference = (proportionDifference * Fraction(beepsPerDay, 1)).toDouble().truncate();
+    final beepDifference = (proportionDifference * Fraction(beepsPerDay, 1))
+        .toDouble()
+        .truncate();
     final dayDifference = _day.differenceWith(other.getDay()) * beepsPerDay;
     return beepDifference + dayDifference;
   }
 
   static bool _lessThan(Fraction a, Fraction b) => a.toDouble() < b.toDouble();
 
-  static LukashianInstant ofEpoch(int epochMilliseconds, [int? calendarKey]) {
+  /// Creates an [Instant] from Lukashian [epochMilliseconds] and optional
+  /// [calendarKey].
+  static Instant ofEpoch(int epochMilliseconds, [int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final store = MillisecondStore.store();
     final data = store.data(key);
-    final day = Day.ofEpoch(data.getEpochDayForEpochMilliseconds(epochMilliseconds), key);
+    final day = Day.ofEpoch(
+      data.getEpochDayForEpochMilliseconds(epochMilliseconds),
+      key,
+    );
     final millisecondsOfDay = day.lengthInMilliseconds();
-    final millisecondsPassed = epochMilliseconds - day.getEpochMillisecondsAtStartOfDay();
+    final millisecondsPassed =
+        epochMilliseconds - day.getEpochMillisecondsAtStartOfDay();
     final proportionOfDay = Fraction(millisecondsPassed, millisecondsOfDay);
-    return LukashianInstant.of(day, proportionOfDay);
+    return Instant.of(day, proportionOfDay);
   }
 
-  static LukashianInstant of(Day day, Fraction proportionOfDay) {
+  /// Creates an instant at [proportionOfDay] on [day].
+  ///
+  /// Throws [LukashianException] if [proportionOfDay] is not in `[0, 1)`.
+  static Instant of(Day day, Fraction proportionOfDay) {
     final p = proportionOfDay.toDouble();
     LukashianException.check(
       p >= 0 && p < 1,
       () => 'Proportion of day must be between 0 (inclusive) and 1 (exclusive)',
     );
-    return LukashianInstant._(day, proportionOfDay, day.getCalendarKey());
+    return Instant._(day, proportionOfDay, day.getCalendarKey());
   }
 
-  static LukashianInstant ofBeeps(Day day, int beeps) => LukashianInstant.of(day, Fraction(beeps, beepsPerDay));
+  /// Creates an instant at [beeps] on [day].
+  static Instant ofBeeps(Day day, int beeps) =>
+      Instant.of(day, Fraction(beeps, beepsPerDay));
 
-  static LukashianInstant ofYearDay(Year year, int day, Fraction proportionOfDay) => LukashianInstant.of(Day.of(year, day), proportionOfDay);
-  static LukashianInstant ofYearDayFraction(int year, int day, Fraction proportionOfDay, [int? calendarKey]) {
+  /// [of] with a [Year] and day-of-year.
+  static Instant ofYearDay(Year year, int day, Fraction proportionOfDay) =>
+      Instant.of(Day.of(year, day), proportionOfDay);
+
+  /// [ofYearDay] with numeric year and optional [calendarKey].
+  static Instant ofYearDayFraction(
+    int year,
+    int day,
+    Fraction proportionOfDay, [
+    int? calendarKey,
+  ]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
-    return LukashianInstant.of(Day.ofYearDay(year, day, key), proportionOfDay);
+    return Instant.of(Day.ofYearDay(year, day, key), proportionOfDay);
   }
 
-  static LukashianInstant ofYearDayBeeps(Year year, int day, int beeps) => LukashianInstant.ofBeeps(Day.of(year, day), beeps);
-  static LukashianInstant ofYearDayBeepsKey(int year, int day, int beeps, [int? calendarKey]) {
+  /// [ofBeeps] with [Year] and day-of-year.
+  static Instant ofYearDayBeeps(Year year, int day, int beeps) =>
+      Instant.ofBeeps(Day.of(year, day), beeps);
+
+  /// [ofYearDayBeeps] with numeric year and optional [calendarKey].
+  static Instant ofYearDayBeepsKey(
+    int year,
+    int day,
+    int beeps, [
+    int? calendarKey,
+  ]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
-    return LukashianInstant.ofBeeps(Day.ofYearDay(year, day, key), beeps);
+    return Instant.ofBeeps(Day.ofYearDay(year, day, key), beeps);
   }
 
-  static LukashianInstant ofUnixEpochMilliseconds(int unixEpochMilliseconds, [int? calendarKey]) {
+  /// Lukashian instant from UNIX [unixEpochMilliseconds] (may be negative).
+  static Instant ofUnixEpochMilliseconds(
+    int unixEpochMilliseconds, [
+    int? calendarKey,
+  ]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
-    return LukashianInstant.ofEpoch(MillisecondStore.store().data(key).getLukashianEpochMilliseconds(unixEpochMilliseconds), key);
+    return Instant.ofEpoch(
+      MillisecondStore.store()
+          .data(key)
+          .getLukashianEpochMilliseconds(unixEpochMilliseconds),
+      key,
+    );
   }
 
-  static LukashianInstant ofDateTime(DateTime dateTime, [int? calendarKey]) {
+  /// Same as [ofUnixEpochMilliseconds] for [dateTime]'s millis-since-epoch.
+  static Instant ofDateTime(DateTime dateTime, [int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
-    return LukashianInstant.ofUnixEpochMilliseconds(dateTime.millisecondsSinceEpoch, key);
+    return Instant.ofUnixEpochMilliseconds(
+      dateTime.millisecondsSinceEpoch,
+      key,
+    );
   }
 
-  static LukashianInstant now([int? calendarKey]) {
+  /// The current instant for optional [calendarKey].
+  static Instant now([int? calendarKey]) {
     final key = calendarKey ?? MillisecondStore.store().getDefaultCalendarKey();
     final data = MillisecondStore.store().data(key);
-    return LukashianInstant.ofEpoch(data.getCurrentEpochMilliseconds(), key);
+    return Instant.ofEpoch(data.getCurrentEpochMilliseconds(), key);
   }
 
   @override
-  int compareTo(LukashianInstant other) {
+  int compareTo(Instant other) {
     checkSameKeyAs(other);
     return getEpochMilliseconds().compareTo(other.getEpochMilliseconds());
   }
@@ -244,8 +405,11 @@ final class LukashianInstant extends CalendarObject implements Comparable<Lukash
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is LukashianInstant && other.getEpochMilliseconds() == getEpochMilliseconds() && other.calendarKey == calendarKey);
+      (other is Instant &&
+          other.getEpochMilliseconds() == getEpochMilliseconds() &&
+          other.calendarKey == calendarKey);
 
   @override
-  String toString() => '[Instant: ${_day.getYear().getYearNumber()}-${_day.getDayNumber()} ${getBeeps().toString().padLeft(4, '0')}]';
+  String toString() =>
+      '[Instant: ${_day.getYear().getYearNumber()}-${_day.getDayNumber()} ${getBeeps().toString().padLeft(4, '0')}]';
 }

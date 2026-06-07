@@ -1,12 +1,12 @@
 # lukashian
 
-A Dart implementation of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
+A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
 
 For more on the calendar itself, see [lukashian.org](https://www.lukashian.org).
 
 ## Features
 
-- **Core types**: `Year`, `Day`, `LukashianInstant` (epoch-based, comparable, calendar-key aware)
+- **Core types**: `Year`, `Day`, `Instant` (epoch-based, comparable, calendar-key aware)
 - **Formatting**: `Formatter` and `DayFormat` for years, days, instants and time-of-day (e.g. beeps)
 - **Multiple calendars**: Register and switch between Earth, Mars, or your own data via `MillisecondStore` and `MillisecondStoreDataProvider`
 - **External data**: Load calendar data from files or HTTP (including official [lukashian.org](https://www.lukashian.org) endpoints) using `FileMillisecondStoreDataProvider`, `HttpMillisecondStoreDataProvider`, `StandardEarthHttpMillisecondStoreDataProvider`, and `StandardMarsHttpMillisecondStoreDataProvider`
@@ -31,7 +31,7 @@ void main() async {
   store.setDefaultCalendarKey(CalendarKeys.earthHttpLukashianOrg);
   await store.ensureLoaded(CalendarKeys.earthHttpLukashianOrg);
 
-  final now = LukashianInstant.now();
+  final now = Instant.now();
   print(Formatter.formatInstant(now)); // e.g. "5919-43 3300"
 }
 ```
@@ -42,16 +42,16 @@ void main() async {
 
 ```dart
 // Current instant (uses default calendar)
-final now = LukashianInstant.now();
+final now = Instant.now();
 
 // From epoch millisecond or day
-final instant = LukashianInstant.ofEpoch(1_000_000);
+final instant = Instant.ofEpoch(1_000_000);
 final day = Day.ofEpoch(42);
 
 // From year and day
 final y = Year.of(5919);
 final d = Day.of(y, 43);
-final inst = LukashianInstant.ofYearDayBeepsKey(5919, 43, 3300);
+final inst = Instant.ofYearDayBeepsKey(5919, 43, 3300);
 
 // Arithmetic and comparison
 final tomorrow = now.plusDays(1);
@@ -73,7 +73,7 @@ Use a specific calendar key when creating values, or set the default:
 
 ```dart
 // Explicit key (e.g. Mars)
-final onMars = LukashianInstant.now(CalendarKeys.marsHttpLukashianOrg);
+final onMars = Instant.now(CalendarKeys.marsHttpLukashianOrg);
 
 // Set default so all future now() / of() use that calendar
 MillisecondStore.store().setDefaultCalendarKey(CalendarKeys.marsHttpLukashianOrg);
@@ -101,7 +101,7 @@ Binary format: 8 bytes per value, big-endian (same as the Java reference). Exten
 
 ### Example CLI
 
-The [example/lukashian_example.dart](example/lukashian_example.dart) script is a small CLI that converts an Earth date (or the current date) to the Lukashian date using the official lukashian.org HTTP endpoint. Run it from the package root:
+The [example CLI](https://github.com/chris-NR/lukashian-dart/blob/main/example/lukashian_example.dart) converts an Earth date (or the current date) to the Lukashian date using the official lukashian.org HTTP endpoint. Run it from the package root:
 
 ```bash
 # Current date/time, Earth calendar
@@ -123,10 +123,27 @@ Options: `-c` / `--calendar` (`earth` or `mars`), `-h` / `--help`. Optional posi
 
 - **Computed providers**: Full implementations of `StandardEarthMillisecondStoreDataProvider` and `StandardMarsMillisecondStoreDataProvider` (Equation of Time and Mars sol calculations), so `CalendarKeys.earth` and `CalendarKeys.mars` work without network or file data.
 - **Web support**: An HTTP implementation that works on the web (e.g. conditional imports or a platform-agnostic HTTP client), since the current `HttpMillisecondStoreDataProvider` uses `dart:io` and is VM-only.
-- **Parsing**: Parse formatted strings back into `Year`, `Day`, or `LukashianInstant` where unambiguous.
-- **Documentation**: API docs (e.g. `dart doc`) and additional examples.
+- **Parsing**: Parse formatted strings back into `Year`, `Day`, or `Instant` where unambiguous.
+
+## Deviations from the Java reference implementation
+
+This package mirrors [org.lukashian:lukashian](https://central.sonatype.com/artifact/org.lukashian/lukashian) (see the `lukashian` Java repo). Intentional differences:
+
+- **Instant type name**: Java uses `org.lukashian.Instant`; Dart exposes `Instant` so it does not clash with `dart:core` `DateTime`. (Some early docs said “LukashianInstant”; the type is `Instant`.)
+- **Async data loading**: Java `MillisecondStoreDataProvider` methods return values synchronously. In Dart they return `Future` so file/HTTP loading can await I/O. Call `MillisecondStore.ensureLoaded` before `MillisecondStore.data` for a key.
+- **MillisecondStore access**: Java offers static shortcuts `MillisecondStore.data(key)` and `MillisecondStore.defaultCalendarKey()` on the singleton. Dart uses `MillisecondStore.store()` and instance methods `data`, `getDefaultCalendarKey`, `setDefaultCalendarKey`.
+- **Fraction type**: Java uses Apache `BigFraction`; Dart uses `package:fraction` `Fraction`.
+- **Numeric types**: Java uses `long` for epoch milliseconds; Dart uses `int` (64-bit on the VM; be careful on web if values exceed JS safe integer range).
+- **Computed Earth/Mars providers**: Java fully implements `StandardEarthMillisecondStoreDataProvider` and `StandardMarsMillisecondStoreDataProvider`. The Dart port ships **stubs** that throw `UnimplementedError`; use `StandardEarthHttpMillisecondStoreDataProvider`, `StandardMarsHttpMillisecondStoreDataProvider`, or your own provider.
+- **HTTP client**: Java uses `java.net.http.HttpClient`. Dart uses `dart:io` `HttpClient`, so the HTTP providers are **VM-only**, not web.
+- **Interop**: Java provides `toJavaInstant()` / `ofJavaInstant`. Dart provides `Instant.toDateTime` / `Instant.ofDateTime` for UTC `DateTime`.
+- **Formatting API**: Java overloads `Formatter.format(...)`. Dart uses named methods such as `Formatter.formatYear`, `formatDay`, `formatInstant`.
+- **Combined predicates**: Some Java APIs use separate overloads (e.g. `Year.contains(Day)` vs `contains(Instant)`). Dart may use a single method taking a common supertype or `CalendarObject`; see dartdoc on the specific type.
+- **Serialization**: Java core types implement `java.io.Serializable`; Dart has no direct equivalent.
+
+API behavior is otherwise intended to match the Java library; where this port differs, prefer the dartdoc on each declaration.
 
 ## Additional information
 
-- This package is a port of the [Java reference implementation](https://central.sonatype.com/artifact/org.lukashian/lukashian). The Dart API uses `LukashianInstant` to avoid clashing with `DateTime`, and async `MillisecondStoreDataProvider` methods (`Future<...>`). Computed Earth/Mars providers are stubs; use the HTTP (or file) providers to load official data from lukashian.org.
 - The Lukashian Calendar and The Lukashian Calendar Mechanism are registered at the Benelux Office for Intellectual Property (registration number 120712). See the project license for redistribution and naming requirements.
+- As an experiment in AI assisted software engineering this port was produced using the Cursor IDE. Claude Opus (4.6/7) was used for planning and Composer/'auto' were used for implementation. Code/PR reviews were performed by CodeRabbit.

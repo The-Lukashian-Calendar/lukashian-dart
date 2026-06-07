@@ -19,9 +19,9 @@ void main() {
 
   group('Formatter', () {
     test('testFormat', () {
-      expect(Formatter.formatInstant(LukashianInstant.ofEpoch(1)), '1-1 0000');
-      expect(Formatter.formatInstant(LukashianInstant.ofEpoch(300)), '1-1 9966');
-      final instant1900 = LukashianInstant.ofEpoch(1900);
+      expect(Formatter.formatInstant(Instant.ofEpoch(1)), '1-1 0000');
+      expect(Formatter.formatInstant(Instant.ofEpoch(300)), '1-1 9966');
+      final instant1900 = Instant.ofEpoch(1900);
       expect(Formatter.formatInstant(instant1900), '2-3 3300');
 
       final proportionStr = instant1900.getProportionOfDay().toString();
@@ -57,14 +57,21 @@ void main() {
       );
 
       expect(
-        Formatter.formatInstant(LukashianInstant.ofEpoch(1900), dayFormat: DayFormat.dayOnly, daySeparator: '/'),
+        Formatter.formatInstant(
+          Instant.ofEpoch(1900),
+          dayFormat: DayFormat.dayOnly,
+          daySeparator: '/',
+        ),
         '3 3300',
       );
       expect(
-        Formatter.formatInstant(LukashianInstant.ofEpoch(1900), dayFormat: DayFormat.epoch),
+        Formatter.formatInstant(
+          Instant.ofEpoch(1900),
+          dayFormat: DayFormat.epoch,
+        ),
         '7 3300',
       );
-      expect(Formatter.formatInstant(LukashianInstant.ofEpoch(1900)), '2-3 3300');
+      expect(Formatter.formatInstant(Instant.ofEpoch(1900)), '2-3 3300');
     });
 
     test('testFormat_NoDayFormat', () {

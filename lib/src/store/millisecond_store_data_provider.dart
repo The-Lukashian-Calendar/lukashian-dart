@@ -43,16 +43,54 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/// Provides epoch data for a Lukashian calendar instance.
-/// Implementations do not need to cache; [MillisecondStore] caches after loading.
+/// For each [Day] and [Year], an implementation provides the number of
+/// milliseconds between the start of the calendar (the Lukashian epoch) and the
+/// end of that day or year ('epoch milliseconds'). It also stores the offset
+/// between the Lukashian epoch and the UNIX epoch. Using these numbers, the
+/// actual years and days of the Lukashian Calendar are defined.
+///
+/// An implementation must provide:
+///
+/// - The number of epoch milliseconds for each year in an array where the index
+///   + 1 is the year and the value is the number of epoch milliseconds for that
+///   year — how many milliseconds have passed from the beginning of the
+///   calendar up until the final point of that year.
+/// - The number of epoch milliseconds for each day in an array where the
+///   index + 1 is the epoch day and the value is the number of epoch
+///   milliseconds for that day — how many milliseconds have passed from the
+///   beginning of the calendar up until the final point of that day (epoch
+///   days; it does not take into account the year each day is in).
+/// - The offset in milliseconds between the Lukashian epoch and the UNIX
+///   epoch such that
+///   `unixEpochOffsetMilliseconds + millisecondsSinceUnixEpoch =
+///   millisecondsSinceLukashianEpoch`. When the UNIX epoch is after the
+///   Lukashian epoch, this must be positive. It is measured around the point
+///   of the UNIX epoch, before any UNIX leap seconds were added.
+///
+/// This allows for various instances of the Lukashian Calendar Mechanism. See
+/// [CalendarKeys] for the instances available by default.
+///
+/// The Lukashian Calendar Mechanism assumes that each year and each day is at
+/// least 3 milliseconds long (a first millisecond, a last one, and at least one
+/// in between). Shorter spans are not guaranteed.
+///
+/// Following that constraint, each year is assumed to be at least 3 days long.
+///
+/// Implementations do not need to provide caching: in this Dart port each
+/// load method is async; [MillisecondStore.ensureLoaded] loads once and
+/// [MillisecondStore] caches the result in [MillisecondStoreData].
 abstract interface class MillisecondStoreDataProvider {
-  /// Loads the offset in milliseconds between the Lukashian epoch and the UNIX epoch.
+  /// Loads the offset in milliseconds between the Lukashian epoch and the UNIX
+  /// epoch (see interface documentation).
   Future<int> loadUnixEpochOffsetMilliseconds();
 
-  /// Loads the cumulative epoch milliseconds at the end of each year (index 0 = year 1).
+  /// Loads cumulative epoch milliseconds at the end of each year (index 0 =
+  /// year 1).
   Future<List<int>> loadYearEpochMilliseconds();
 
-  /// Loads the cumulative epoch milliseconds at the end of each epoch day (index 0 = day 1).
+  /// Loads cumulative epoch milliseconds at the end of each epoch day (index 0 =
+  /// day 1).
+  ///
   /// [yearEpochMilliseconds] is the result of [loadYearEpochMilliseconds].
   Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds);
 }

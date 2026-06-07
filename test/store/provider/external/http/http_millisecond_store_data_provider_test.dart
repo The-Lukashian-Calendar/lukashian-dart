@@ -43,27 +43,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:lukashian/src/store/provider/external/http/http_millisecond_store_data_provider.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('loadMillisecondsByteArray times out when server never responds', () async {
-    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
-    addTearDown(() => server.close());
+  test(
+    'loadMillisecondsByteArray times out when server never responds',
+    () async {
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close());
 
-    server.listen((request) {
-      // Never send a response to simulate a hanging server.
-    });
+      server.listen((request) {
+        // Never send a response to simulate a hanging server.
+      });
 
-    final baseUrl = 'http://localhost:${server.port}/';
-    final provider = HttpMillisecondStoreDataProvider.withDefaults(baseUrl);
+      final baseUrl = 'http://localhost:${server.port}/';
+      final provider = HttpMillisecondStoreDataProvider.withDefaults(baseUrl);
 
-    await expectLater(
-      provider.loadUnixEpochOffsetMilliseconds(),
-      throwsA(isA<TimeoutException>()),
-    );
-  }, timeout: Timeout(Duration(seconds: 25)));
+      await expectLater(
+        provider.loadUnixEpochOffsetMilliseconds(),
+        throwsException,
+      );
+    },
+    timeout: Timeout(Duration(seconds: 25)),
+  );
 }

@@ -44,7 +44,12 @@ void main(List<String> args) async {
         : CalendarKeys.earthHttpLukashianOrg;
 
     final rest = results.rest;
-    final isoDate = rest.isNotEmpty ? rest.single : null;
+    if (rest.length > 1) {
+      throw FormatException(
+        'At most one ISO_DATE argument is allowed; received ${rest.length}: ${rest.join(' ')}',
+      );
+    }
+    final isoDate = rest.isEmpty ? null : rest[0];
 
     await _run(calendarKey: calendarKey, isoDate: isoDate);
   } on FormatException catch (e) {
@@ -75,15 +80,18 @@ Future<void> _run({required int calendarKey, String? isoDate}) async {
   await store.ensureLoaded(calendarKey);
   store.setDefaultCalendarKey(calendarKey);
 
-  final LukashianInstant instant;
+  final Instant instant;
   if (isoDate != null && isoDate.trim().isNotEmpty) {
-    final dateTime = DateTime.tryParse(isoDate.trim());
-    instant = LukashianInstant.ofDateTime(
-      dateTime ?? DateTime.now(),
-      calendarKey,
-    );
+    final trimmed = isoDate.trim();
+    final dateTime = DateTime.tryParse(trimmed);
+    if (dateTime == null) {
+      stderr.writeln(
+        'Warning: could not parse ISO_DATE "$trimmed"; using current date/time.',
+      );
+    }
+    instant = Instant.ofDateTime(dateTime ?? DateTime.now(), calendarKey);
   } else {
-    instant = LukashianInstant.now(calendarKey);
+    instant = Instant.now(calendarKey);
   }
 
   print(Formatter.formatInstant(instant, dayFormat: DayFormat.dayFirst));
@@ -96,8 +104,9 @@ Lukashian CLI – convert Earth date to Lukashian date (official lukashian.org)
 Usage:
   dart run example/lukashian_example.dart [options] [ISO_DATE]
 
-  If ISO_DATE is omitted or invalid, the current date/time is used.
+  If ISO_DATE is omitted, the current date/time is used.
   ISO_DATE must be in ISO 8601 format (e.g. 2025-03-28 or 2025-03-28T12:00:00Z).
+  If ISO_DATE cannot be parsed, a warning is printed and the current date/time is used.
   Out-of-range elements overflow to the next unit (e.g. 2025-03-32 is 2025-04-01).
 
 
