@@ -83,6 +83,20 @@ final class MillisecondStore {
   final Map<int, MillisecondStoreData> _data = {};
   Future<void>? _initFuture;
   final Map<int, Future<void>> _asyncLoading = {};
+  final Map<int, int> _asyncLoadGeneration = {};
+
+  /// Bumps the async-load generation for [key] and returns the new value.
+  int _bumpAsyncLoadGeneration(int key) {
+    final next = (_asyncLoadGeneration[key] ?? 0) + 1;
+    _asyncLoadGeneration[key] = next;
+    return next;
+  }
+
+  /// Invalidates in-flight async loads for [key].
+  void _invalidateAsyncLoad(int key) {
+    _bumpAsyncLoadGeneration(key);
+    _asyncLoading.remove(key);
+  }
 
   /// The default calendar key when no explicit key is provided.
   int getDefaultCalendarKey() => _defaultCalendarKey;
@@ -97,6 +111,7 @@ final class MillisecondStore {
   /// The provider is not retained after loading. Calling again replaces the
   /// cached [MillisecondStoreData] for [key].
   void loadProvider(int key, MillisecondStoreDataProvider provider) {
+    _invalidateAsyncLoad(key);
     _data[key] = MillisecondStoreData.fromProvider(provider);
   }
 
@@ -110,27 +125,37 @@ final class MillisecondStore {
     AsyncMillisecondStoreDataProvider provider,
   ) async {
     if (_data.containsKey(key)) {
-      _data[key] = await MillisecondStoreData.fromAsyncProvider(provider);
+      final generation = _bumpAsyncLoadGeneration(key);
+      final data = await MillisecondStoreData.fromAsyncProvider(provider);
+      if (_asyncLoadGeneration[key] == generation) {
+        _data[key] = data;
+      }
       return;
     }
 
     final inFlight = _asyncLoading[key];
     if (inFlight != null) {
       await inFlight;
-      return;
+      if (_data.containsKey(key)) {
+        return;
+      }
     }
 
+    final generation = _bumpAsyncLoadGeneration(key);
     final future = () async {
-      _data[key] = await MillisecondStoreData.fromAsyncProvider(provider);
+      final data = await MillisecondStoreData.fromAsyncProvider(provider);
+      if (_asyncLoadGeneration[key] == generation) {
+        _data[key] = data;
+      }
     }();
 
     _asyncLoading[key] = future;
     try {
       await future;
     } finally {
-      // Safe: [future] is already awaited above.
-      // ignore: unawaited_futures
-      _asyncLoading.remove(key);
+      if (identical(_asyncLoading[key], future)) {
+        _asyncLoading.remove(key);
+      }
     }
   }
 
@@ -178,11 +203,15 @@ final class MillisecondStore {
   ///
   /// Reload by calling [loadProvider] or [loadAsyncProvider] again.
   void clearData(int key) {
+    _invalidateAsyncLoad(key);
     _data.remove(key);
   }
 
   /// Clears all cached [MillisecondStoreData].
   void clearAllData() {
+    for (final key in {..._asyncLoadGeneration.keys, ..._asyncLoading.keys}) {
+      _bumpAsyncLoadGeneration(key);
+    }
     _data.clear();
     _initFuture = null;
     _asyncLoading.clear();

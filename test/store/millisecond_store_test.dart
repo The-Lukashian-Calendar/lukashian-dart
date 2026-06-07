@@ -115,6 +115,49 @@ void main() {
     await Future.wait(futures);
     expect(loadCount, 1);
   });
+
+  test(
+    'clearData during in-flight loadAsyncProvider does not restore stale data',
+    () async {
+      final key = testCalendarKey + 2;
+      final provider = _DelayedCountingAsyncProvider(() {});
+
+      final loadFuture = store.loadAsyncProvider(key, provider);
+      store.clearData(key);
+      await loadFuture;
+
+      assertLukashianException(() => store.data(key));
+    },
+  );
+
+  test(
+    'loadProvider during in-flight loadAsyncProvider does not get overwritten',
+    () async {
+      final key = testCalendarKey + 2;
+      final asyncProvider = _DelayedCountingAsyncProvider(() {});
+      final syncProvider = _CountingTestProvider(() {});
+
+      final loadFuture = store.loadAsyncProvider(key, asyncProvider);
+      store.loadProvider(key, syncProvider);
+      await loadFuture;
+
+      store.data(key);
+    },
+  );
+
+  test(
+    'clearAllData during in-flight loadAsyncProvider does not restore stale data',
+    () async {
+      final key = testCalendarKey + 2;
+      final provider = _DelayedCountingAsyncProvider(() {});
+
+      final loadFuture = store.loadAsyncProvider(key, provider);
+      store.clearAllData();
+      await loadFuture;
+
+      assertLukashianException(() => store.data(key));
+    },
+  );
 }
 
 class _CountingTestProvider extends TestMillisecondStoreDataProvider {
