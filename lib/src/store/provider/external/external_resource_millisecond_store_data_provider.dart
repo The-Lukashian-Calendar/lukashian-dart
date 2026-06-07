@@ -132,6 +132,12 @@ abstract class ExternalResourceMillisecondStoreDataProvider
     return _loadMilliseconds(yearEpochMillisecondsExtension);
   }
 
+  /// Loads day epoch milliseconds from [dayEpochMillisecondsExtension].
+  ///
+  /// [yearEpochMilliseconds] is unused: external resource providers load the
+  /// complete day-epoch file from a fixed extension and do not derive day data
+  /// from year context. The parameter is present for [AsyncMillisecondStoreDataProvider]
+  /// interface consistency (see also the Java implementation).
   @override
   Future<List<int>> loadDayEpochMilliseconds(
     List<int> yearEpochMilliseconds,
