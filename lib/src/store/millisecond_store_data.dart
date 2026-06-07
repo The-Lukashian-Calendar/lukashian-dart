@@ -49,8 +49,9 @@ import 'package:lukashian/lukashian.dart';
 /// start of the calendar (the Lukashian epoch) and the end of that day or year.
 /// It also stores the offset between the Lukashian epoch and the UNIX epoch.
 ///
-/// Values are supplied when this object is constructed (in [MillisecondStore]
-/// after loading from a [MillisecondStoreDataProvider]).
+/// Values are supplied when this object is constructed, either from a
+/// [MillisecondStoreDataProvider] via [MillisecondStoreData.fromProvider] or
+/// from pre-loaded arrays.
 ///
 /// This class contains the calculations to convert between UNIX time and
 /// Terrestrial Time by correcting for leap seconds. Other conversions are not
@@ -66,8 +67,46 @@ import 'package:lukashian/lukashian.dart';
 ///
 /// See also [MillisecondStore], [MillisecondStoreDataProvider].
 class MillisecondStoreData {
+  /// Creates store data by loading from [provider].
+  ///
+  /// Equivalent to the Java constructor
+  /// `MillisecondStoreData(MillisecondStoreDataProvider)`.
+  factory MillisecondStoreData.fromProvider(
+    MillisecondStoreDataProvider provider,
+  ) {
+    final yearMs = provider.loadYearEpochMilliseconds();
+    return MillisecondStoreData._(
+      unixEpochOffsetMilliseconds: provider.loadUnixEpochOffsetMilliseconds(),
+      yearEpochMilliseconds: yearMs,
+      dayEpochMilliseconds: provider.loadDayEpochMilliseconds(yearMs),
+    );
+  }
+
+  /// Creates store data from an [AsyncMillisecondStoreDataProvider].
+  static Future<MillisecondStoreData> fromAsyncProvider(
+    AsyncMillisecondStoreDataProvider provider,
+  ) async {
+    final yearMs = await provider.loadYearEpochMilliseconds();
+    return MillisecondStoreData._(
+      unixEpochOffsetMilliseconds:
+          await provider.loadUnixEpochOffsetMilliseconds(),
+      yearEpochMilliseconds: yearMs,
+      dayEpochMilliseconds: await provider.loadDayEpochMilliseconds(yearMs),
+    );
+  }
+
   /// Creates store data from pre-loaded epoch arrays and UNIX offset.
   MillisecondStoreData({
+    required int unixEpochOffsetMilliseconds,
+    required List<int> yearEpochMilliseconds,
+    required List<int> dayEpochMilliseconds,
+  }) : this._(
+         unixEpochOffsetMilliseconds: unixEpochOffsetMilliseconds,
+         yearEpochMilliseconds: yearEpochMilliseconds,
+         dayEpochMilliseconds: dayEpochMilliseconds,
+       );
+
+  MillisecondStoreData._({
     required int unixEpochOffsetMilliseconds,
     required List<int> yearEpochMilliseconds,
     required List<int> dayEpochMilliseconds,

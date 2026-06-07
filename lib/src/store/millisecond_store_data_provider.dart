@@ -76,21 +76,23 @@
 ///
 /// Following that constraint, each year is assumed to be at least 3 days long.
 ///
-/// Implementations do not need to provide caching: in this Dart port each
-/// load method is async; [MillisecondStore.ensureLoaded] loads once and
-/// [MillisecondStore] caches the result in [MillisecondStoreData].
+/// Implementations do not need to provide caching: [MillisecondStore.loadProvider]
+/// reads each method once and stores the result in [MillisecondStoreData].
+///
+/// For asynchronous loading (HTTP, files), use [AsyncMillisecondStoreDataProvider]
+/// with [MillisecondStore.loadAsyncProvider].
 abstract interface class MillisecondStoreDataProvider {
   /// Loads the offset in milliseconds between the Lukashian epoch and the UNIX
   /// epoch (see interface documentation).
-  Future<int> loadUnixEpochOffsetMilliseconds();
+  int loadUnixEpochOffsetMilliseconds();
 
   /// Loads cumulative epoch milliseconds at the end of each year (index 0 =
   /// year 1).
-  Future<List<int>> loadYearEpochMilliseconds();
+  List<int> loadYearEpochMilliseconds();
 
   /// Loads cumulative epoch milliseconds at the end of each epoch day (index 0 =
   /// day 1).
   ///
   /// [yearEpochMilliseconds] is the result of [loadYearEpochMilliseconds].
-  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds);
+  List<int> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds);
 }

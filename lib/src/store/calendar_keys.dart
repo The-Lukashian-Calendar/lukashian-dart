@@ -43,10 +43,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/// Keys that represent the various [MillisecondStoreDataProvider]s.
+/// Keys that represent the various calendar instances in [MillisecondStore].
 ///
-/// When registering your own provider in [MillisecondStore], it is not
-/// advisable to use one of the int values listed here.
+/// When loading your own data with [MillisecondStore.loadProvider] or
+/// [MillisecondStore.loadAsyncProvider], it is not advisable to use one of the
+/// int values listed here.
 ///
 /// See also [MillisecondStoreDataProvider].
 class CalendarKeys {

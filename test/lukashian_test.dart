@@ -5,12 +5,11 @@ import 'helpers/test_millisecond_store_data_provider.dart';
 
 void main() {
   group('Calendar API smoke test', () {
-    test('Year/Day/Instant formatting is non-empty', () async {
+    test('Year/Day/Instant formatting is non-empty', () {
       final store = MillisecondStore.store();
       final previousDefaultKey = store.getDefaultCalendarKey();
 
-      store.registerProvider(testCalendarKey, TestMillisecondStoreDataProvider());
-      await store.ensureLoaded(testCalendarKey);
+      store.loadProvider(testCalendarKey, TestMillisecondStoreDataProvider());
       store.setDefaultCalendarKey(testCalendarKey);
 
       try {
