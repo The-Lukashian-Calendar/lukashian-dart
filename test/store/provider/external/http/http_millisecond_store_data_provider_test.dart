@@ -43,6 +43,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:lukashian/src/store/provider/external/http/http_millisecond_store_data_provider.dart';
@@ -63,8 +64,8 @@ void main() {
       final provider = HttpMillisecondStoreDataProvider.withDefaults(baseUrl);
 
       await expectLater(
-        provider.loadUnixEpochOffsetMilliseconds(),
-        throwsException,
+        provider.loadMillisecondsByteArray('${baseUrl}unixEpochOffset'),
+        throwsA(isA<TimeoutException>()),
       );
     },
     timeout: Timeout(Duration(seconds: 25)),
