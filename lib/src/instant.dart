@@ -150,17 +150,18 @@ final class Instant extends CalendarObject implements Comparable<Instant> {
     if (_lessThan(proportionToSubtract, Fraction(0, 1))) {
       return plusProportionOfDay(Fraction(0, 1) - proportionToSubtract);
     }
-    Fraction totalProportion = _proportionOfDay - proportionToSubtract;
-    int daysToSubtract = (Fraction(0, 1) - totalProportion)
-        .toDouble()
-        .truncate();
-    Fraction remainingProportion =
-        totalProportion + Fraction(daysToSubtract, 1);
+    final totalProportion = _proportionOfDay - proportionToSubtract;
+    final negated = totalProportion.negate();
+    var daysToSubtract = negated.numerator ~/ negated.denominator;
+    var remainingProportion = totalProportion + Fraction(daysToSubtract, 1);
     if (_lessThan(remainingProportion, Fraction(0, 1))) {
       daysToSubtract++;
       remainingProportion = remainingProportion + Fraction(1, 1);
     }
-    return Instant.of(_day.minusDays(daysToSubtract), remainingProportion);
+    return Instant.of(
+      _day.minusDays(daysToSubtract),
+      remainingProportion.reduce(),
+    );
   }
 
   /// Minus [beepsToSubtract] beeps (each 1/[beepsPerDay] of a day).
@@ -172,9 +173,10 @@ final class Instant extends CalendarObject implements Comparable<Instant> {
     if (_lessThan(proportionToAdd, Fraction(0, 1))) {
       return minusProportionOfDay(proportionToAdd.negate());
     }
-    Fraction totalProportion = _proportionOfDay + proportionToAdd;
-    int daysToAdd = totalProportion.toDouble().truncate();
-    Fraction remainingProportion = totalProportion - Fraction(daysToAdd, 1);
+    final totalProportion = _proportionOfDay + proportionToAdd;
+    final daysToAdd = totalProportion.numerator ~/ totalProportion.denominator;
+    final remainingProportion =
+        (totalProportion - Fraction(daysToAdd, 1)).reduce();
     return Instant.of(_day.plusDays(daysToAdd), remainingProportion);
   }
 
@@ -225,13 +227,19 @@ final class Instant extends CalendarObject implements Comparable<Instant> {
   /// The unique Lukashian timeline millisecond for this instant.
   int getEpochMilliseconds() {
     final millisecondsOfDay = _day.lengthInMilliseconds();
-    Fraction resultingMillisecond =
-        Fraction(millisecondsOfDay, 1) * _proportionOfDay;
-    if (resultingMillisecond ==
-        Fraction(resultingMillisecond.toDouble().truncate(), 1)) {
-      resultingMillisecond = resultingMillisecond + Fraction(1, 1);
+    final prop = _proportionOfDay.reduce();
+    final num =
+        BigInt.from(millisecondsOfDay) * BigInt.from(prop.numerator);
+    final den = BigInt.from(prop.denominator);
+
+    var resultingNum = num;
+    final truncatedMs = num ~/ den;
+    if (resultingNum == den * truncatedMs) {
+      resultingNum = resultingNum + den;
     }
-    final resultingMillisecondLong = resultingMillisecond.toDouble().ceil();
+
+    final resultingMillisecondLong =
+        ((resultingNum + den - BigInt.one) ~/ den).toInt();
     return _day.getEpochMillisecondsPreviousDay() + resultingMillisecondLong;
   }
 
@@ -298,7 +306,9 @@ final class Instant extends CalendarObject implements Comparable<Instant> {
     return beepDifference + dayDifference;
   }
 
-  static bool _lessThan(Fraction a, Fraction b) => a.toDouble() < b.toDouble();
+  static bool _lessThan(Fraction a, Fraction b) {
+    return a.numerator * b.denominator < b.numerator * a.denominator;
+  }
 
   /// Creates an [Instant] from Lukashian [epochMilliseconds] and optional
   /// [calendarKey].

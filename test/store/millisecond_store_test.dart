@@ -145,6 +145,19 @@ void main() {
     },
   );
 
+  test('clearData on default HTTP calendar key allows init to reload', () async {
+    await store.init();
+    store.data(CalendarKeys.earthHttpLukashianOrg);
+
+    store.clearData(CalendarKeys.earthHttpLukashianOrg);
+    assertLukashianException(
+      () => store.data(CalendarKeys.earthHttpLukashianOrg),
+    );
+
+    await store.init();
+    store.data(CalendarKeys.earthHttpLukashianOrg);
+  });
+
   test(
     'clearAllData during in-flight loadAsyncProvider does not restore stale data',
     () async {

@@ -413,31 +413,105 @@ void main() {
     });
 
     test('testLengthInMilliseconds', () {
-      expect(Day.ofEpoch(1, testCalendarKey).lengthInMilliseconds(), 300);
+      for (var day = 1; day <= 15; day++) {
+        expect(Day.ofEpoch(day, testCalendarKey).lengthInMilliseconds(), 300);
+      }
       expect(Day.ofEpoch(16, testCalendarKey).lengthInMilliseconds(), 299);
       expect(Day.ofEpoch(17, testCalendarKey).lengthInMilliseconds(), 101);
       expect(Day.ofEpoch(18, testCalendarKey).lengthInMilliseconds(), 34100);
     });
 
     test('testGetEpochDay', () {
-      expect(Day.ofEpoch(1, testCalendarKey).getEpochDay(), 1);
-      expect(Day.ofEpoch(18, testCalendarKey).getEpochDay(), 18);
+      for (var day = 1; day <= 18; day++) {
+        expect(Day.ofEpoch(day, testCalendarKey).getEpochDay(), day);
+      }
     });
 
     test('testGetEpochMilliseconds', () {
-      expect(Day.ofEpoch(1, testCalendarKey).getEpochMilliseconds(), 300);
-      expect(Day.ofEpoch(18, testCalendarKey).getEpochMilliseconds(), 39000);
+      final expected = [
+        300,
+        600,
+        900,
+        1200,
+        1500,
+        1800,
+        2100,
+        2400,
+        2700,
+        3000,
+        3300,
+        3600,
+        3900,
+        4200,
+        4500,
+        4799,
+        4900,
+        39000,
+      ];
+      for (var day = 1; day <= 18; day++) {
+        expect(
+          Day.ofEpoch(day, testCalendarKey).getEpochMilliseconds(),
+          expected[day - 1],
+        );
+      }
+    });
+
+    test('testGetEpochMillisecondsPreviousDay', () {
+      final expected = [
+        0,
+        300,
+        600,
+        900,
+        1200,
+        1500,
+        1800,
+        2100,
+        2400,
+        2700,
+        3000,
+        3300,
+        3600,
+        3900,
+        4200,
+        4500,
+        4799,
+        4900,
+      ];
+      for (var day = 1; day <= 18; day++) {
+        expect(
+          Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsPreviousDay(),
+          expected[day - 1],
+        );
+      }
     });
 
     test('testGetEpochMillisecondsAtStartOfDay', () {
-      expect(
-        Day.ofEpoch(1, testCalendarKey).getEpochMillisecondsAtStartOfDay(),
+      final expected = [
         1,
-      );
-      expect(
-        Day.ofEpoch(2, testCalendarKey).getEpochMillisecondsAtStartOfDay(),
         301,
-      );
+        601,
+        901,
+        1201,
+        1501,
+        1801,
+        2101,
+        2401,
+        2701,
+        3001,
+        3301,
+        3601,
+        3901,
+        4201,
+        4501,
+        4800,
+        4901,
+      ];
+      for (var day = 1; day <= 18; day++) {
+        expect(
+          Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsAtStartOfDay(),
+          expected[day - 1],
+        );
+      }
     });
 
     test('testGetYear', () {

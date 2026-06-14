@@ -205,6 +205,10 @@ final class MillisecondStore {
   void clearData(int key) {
     _invalidateAsyncLoad(key);
     _data.remove(key);
+    if (key == CalendarKeys.earthHttpLukashianOrg ||
+        key == CalendarKeys.marsHttpLukashianOrg) {
+      _initFuture = null;
+    }
   }
 
   /// Clears all cached [MillisecondStoreData].

@@ -2,7 +2,7 @@
 
 A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
 
-For more on the calendar itself, see [lukashian.org](https://www.lukashian.org).
+For more on the calendar itself, see [lukashian.org](https://www.lukashian.org). The canonical Java implementation and reference documentation live at [The-Lukashian-Calendar/lukashian](https://github.com/The-Lukashian-Calendar/lukashian) and map closely to this Dart port.
 
 ## Features
 
@@ -75,8 +75,8 @@ Use a specific calendar key when creating values, or set the default:
 final onMars = Instant.now(CalendarKeys.marsHttpLukashianOrg);
 
 // Set default so all future now() / of() use that calendar
-MillisecondStore.store().setDefaultCalendarKey(CalendarKeys.marsHttpLukashianOrg);
 await MillisecondStore.store().init();
+MillisecondStore.store().setDefaultCalendarKey(CalendarKeys.marsHttpLukashianOrg);
 ```
 
 Calendar keys: `CalendarKeys.earth`, `CalendarKeys.earthHttpLukashianOrg`, `CalendarKeys.mars`, `CalendarKeys.marsHttpLukashianOrg`. The `earth` and `mars` keys are for computed providers (stubs in this port throw `UnimplementedError` until [#33](https://github.com/chris-NR/lukashian-dart/issues/33)); use `init()` to load the `*HttpLukashianOrg` calendars from lukashian.org.

@@ -126,7 +126,8 @@ Future<void> _run({required int calendarKey, String? isoDate}) async {
     if (dateTime == null) {
       throw FormatException(
         'Could not parse ISO_DATE "$trimmed". '
-        'Use ISO 8601 format (e.g. 2025-03-28 or 2025-03-28T12:00:00Z).',
+        'Use ISO 8601 format '
+        '(e.g. 2025-03-28 or 2025-03-28T12:00:00Z).',
       );
     }
     instant = Instant.ofDateTime(dateTime, calendarKey);
