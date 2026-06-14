@@ -3,9 +3,9 @@ description: >-
   The Lukashian Calendar for Dart: a simple, accurate, universal calendar
   mechanism for Earth, Mars and beyond.
 version: 1.0.0
-repository: https://github.com/chris-NR/lukashian-dart
+repository: https://github.com/The-Lukashian-Calendar/lukashian-dart
 homepage: https://www.lukashian.org
-issue_tracker: https://github.com/chris-NR/lukashian-dart/issues
+issue_tracker: https://github.com/The-Lukashian-Calendar/lukashian-dart/issues
 topics:
   - calendar
   - date
