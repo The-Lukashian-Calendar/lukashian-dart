@@ -2,6 +2,10 @@
  * Copyright (c) 2018-2026 (5918-5926 in Lukashian years)
  * All rights reserved.
  *
+ * Unit tests for [Instant] that use [StandardEarthHttpMillisecondStoreDataProvider].
+ * [TestMillisecondStoreDataProvider] is set anyway, to test the manual override
+ * mechanism.
+ *
  * Network-dependent tests mirroring Java InstantRealCalendarTest.
  * Requires HTTP access to lukashian.org (via [MillisecondStore.init]).
  */
@@ -41,10 +45,12 @@ void main() {
 
   group('InstantRealCalendar', () {
     test('testInstantEquality', () {
+      // For the first thousand milliseconds of the calendar and a bit more
       for (var i = 1; i <= 100000; i++) {
         _assertInstantEquality(i);
       }
 
+      // For the periods overlapping the start and end of this day
       final today = Day.now(_earthKey);
       final start = today.getEpochMillisecondsAtStartOfDay();
       final end = today.getEpochMilliseconds();
@@ -55,6 +61,7 @@ void main() {
         _assertInstantEquality(i);
       }
 
+      // For the beeps of today
       for (var i = 0; i < 10000; i++) {
         final instant = today.atTimeBeeps(i);
         expect(instant.getBeeps(), i);
@@ -62,6 +69,9 @@ void main() {
     });
 
     test('testMinusProportionOfDay', () {
+      // Equals looks at the millisecond that an Instant represents; if two
+      // proportions are close enough to represent the same millisecond, then
+      // they are considered equal
       final realInstant = Instant.ofBeeps(Day.ofEpoch(4, _earthKey), 5000);
       _expectInstant(
         Instant.ofBeeps(Day.ofEpoch(4, _earthKey), 0),
@@ -93,11 +103,14 @@ void main() {
     });
 
     test('testPlusProportionOfDay', () {
+      // Equals looks at the millisecond that an Instant represents; if two
+      // proportions are close enough to represent the same millisecond, then
+      // they are considered equal
       final realInstant = Instant.ofBeeps(Day.ofEpoch(4, _earthKey), 5000);
       expect(
         Day.ofEpoch(4, _earthKey).lastInstant(),
         realInstant.plusProportionOfDay(Fraction(499999999999999999, 1000000000000000000)),
-      );
+      ); // Proportion is not enough to "reach" the next day
       _expectInstant(
         Instant.ofBeeps(Day.ofEpoch(5, _earthKey), 4999),
         realInstant.plusProportionOfDay(Fraction(9999, 10000)),
@@ -175,6 +188,7 @@ void main() {
     });
 
     test('testToCalendar', () {
+      // First, test the current time
       final earthData = store.data(_earthKey);
       final currentOffset = earthData.getUnixEpochOffsetMilliseconds() + DateTime.now().millisecondsSinceEpoch;
 
@@ -183,6 +197,7 @@ void main() {
       expect(now.getEpochMilliseconds() + 1000, oneSecondBehind.getEpochMilliseconds());
       expect(_oneSecondBehindKey, oneSecondBehind.getCalendarKey());
 
+      // Then, test an Instant overlapping a UNIX leap second (1972-06-30 23:59:60 UTC)
       const leapUnixMs = 78796800000;
       final leapOffset = earthData.getUnixEpochOffsetMilliseconds() + leapUnixMs;
 
