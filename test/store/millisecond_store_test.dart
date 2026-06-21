@@ -85,21 +85,15 @@ void main() {
     expect(counter, 3);
   });
 
-  test(
-    'concurrent loadAsyncProvider for same key deduplicates provider fetches',
-    () async {
-      var loadCount = 0;
-      final provider = _DelayedCountingAsyncProvider(() => loadCount++);
+  test('concurrent loadAsyncProvider for same key deduplicates provider fetches', () async {
+    var loadCount = 0;
+    final provider = _DelayedCountingAsyncProvider(() => loadCount++);
 
-      final futures = List.generate(
-        10,
-        (_) => store.loadAsyncProvider(testCalendarKey + 2, provider),
-      );
-      await Future.wait(futures);
+    final futures = List.generate(10, (_) => store.loadAsyncProvider(testCalendarKey + 2, provider));
+    await Future.wait(futures);
 
-      expect(loadCount, 1);
-    },
-  );
+    expect(loadCount, 1);
+  });
 
   test('concurrent init calls share one in-flight load', () async {
     var loadCount = 0;
@@ -108,69 +102,55 @@ void main() {
     // Replace init behaviour by loading a test async provider manually first
     // to verify dedup pattern on loadAsyncProvider (init uses same mechanism).
     final provider = _DelayedCountingAsyncProvider(() => loadCount++);
-    final futures = List.generate(
-      5,
-      (_) => store.loadAsyncProvider(testCalendarKey + 2, provider),
-    );
+    final futures = List.generate(5, (_) => store.loadAsyncProvider(testCalendarKey + 2, provider));
     await Future.wait(futures);
     expect(loadCount, 1);
   });
 
-  test(
-    'clearData during in-flight loadAsyncProvider does not restore stale data',
-    () async {
-      final key = testCalendarKey + 2;
-      final provider = _DelayedCountingAsyncProvider(() {});
+  test('clearData during in-flight loadAsyncProvider does not restore stale data', () async {
+    final key = testCalendarKey + 2;
+    final provider = _DelayedCountingAsyncProvider(() {});
 
-      final loadFuture = store.loadAsyncProvider(key, provider);
-      store.clearData(key);
-      await loadFuture;
+    final loadFuture = store.loadAsyncProvider(key, provider);
+    store.clearData(key);
+    await loadFuture;
 
-      assertLukashianException(() => store.data(key));
-    },
-  );
+    assertLukashianException(() => store.data(key));
+  });
 
-  test(
-    'loadProvider during in-flight loadAsyncProvider does not get overwritten',
-    () async {
-      final key = testCalendarKey + 2;
-      final asyncProvider = _DelayedCountingAsyncProvider(() {});
-      final syncProvider = _CountingTestProvider(() {});
+  test('loadProvider during in-flight loadAsyncProvider does not get overwritten', () async {
+    final key = testCalendarKey + 2;
+    final asyncProvider = _DelayedCountingAsyncProvider(() {});
+    final syncProvider = _CountingTestProvider(() {});
 
-      final loadFuture = store.loadAsyncProvider(key, asyncProvider);
-      store.loadProvider(key, syncProvider);
-      await loadFuture;
+    final loadFuture = store.loadAsyncProvider(key, asyncProvider);
+    store.loadProvider(key, syncProvider);
+    await loadFuture;
 
-      store.data(key);
-    },
-  );
+    store.data(key);
+  });
 
   test('clearData on default HTTP calendar key allows init to reload', () async {
     await store.init();
     store.data(CalendarKeys.earthHttpLukashianOrg);
 
     store.clearData(CalendarKeys.earthHttpLukashianOrg);
-    assertLukashianException(
-      () => store.data(CalendarKeys.earthHttpLukashianOrg),
-    );
+    assertLukashianException(() => store.data(CalendarKeys.earthHttpLukashianOrg));
 
     await store.init();
     store.data(CalendarKeys.earthHttpLukashianOrg);
   });
 
-  test(
-    'clearAllData during in-flight loadAsyncProvider does not restore stale data',
-    () async {
-      final key = testCalendarKey + 2;
-      final provider = _DelayedCountingAsyncProvider(() {});
+  test('clearAllData during in-flight loadAsyncProvider does not restore stale data', () async {
+    final key = testCalendarKey + 2;
+    final provider = _DelayedCountingAsyncProvider(() {});
 
-      final loadFuture = store.loadAsyncProvider(key, provider);
-      store.clearAllData();
-      await loadFuture;
+    final loadFuture = store.loadAsyncProvider(key, provider);
+    store.clearAllData();
+    await loadFuture;
 
-      assertLukashianException(() => store.data(key));
-    },
-  );
+    assertLukashianException(() => store.data(key));
+  });
 }
 
 class _CountingTestProvider extends TestMillisecondStoreDataProvider {
@@ -203,11 +183,7 @@ class _DelayedCountingAsyncProvider implements AsyncMillisecondStoreDataProvider
   }
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(
-    List<int> yearEpochMilliseconds,
-  ) async {
-    return TestMillisecondStoreDataProvider().loadDayEpochMilliseconds(
-      yearEpochMilliseconds,
-    );
+  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
+    return TestMillisecondStoreDataProvider().loadDayEpochMilliseconds(yearEpochMilliseconds);
   }
 }

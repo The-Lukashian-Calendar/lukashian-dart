@@ -54,8 +54,7 @@ import 'package:lukashian/lukashian.dart';
 /// Useful when you want the same data as [StandardEarthHttpMillisecondStoreDataProvider]
 /// but offline: download the default resources from the same URLs (e.g. with
 /// `curl`) into a directory whose path you pass as [baseLocation].
-class FileMillisecondStoreDataProvider
-    extends ExternalResourceMillisecondStoreDataProvider {
+class FileMillisecondStoreDataProvider extends ExternalResourceMillisecondStoreDataProvider {
   /// Same as [ExternalResourceMillisecondStoreDataProvider] constructor.
   FileMillisecondStoreDataProvider(
     super.baseLocation,
@@ -66,8 +65,7 @@ class FileMillisecondStoreDataProvider
 
   /// Same as [ExternalResourceMillisecondStoreDataProvider.withDefaults].
   // ignore: use_super_parameters — explicit forward matches original pattern.
-  FileMillisecondStoreDataProvider.withDefaults(String baseLocation)
-    : super.withDefaults(baseLocation);
+  FileMillisecondStoreDataProvider.withDefaults(String baseLocation) : super.withDefaults(baseLocation);
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String path) async {

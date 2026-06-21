@@ -82,33 +82,13 @@ void main() {
         '3 $proportionStr',
       );
       expect(
-        Formatter.formatInstant(
-          instant1900,
-          dayFormat: DayFormat.epoch,
-          formatter: (f) => f.toString(),
-        ),
+        Formatter.formatInstant(instant1900, dayFormat: DayFormat.epoch, formatter: (f) => f.toString()),
         '7 $proportionStr',
       );
-      expect(
-        Formatter.formatInstant(instant1900, formatter: (f) => f.toString()),
-        '2-3 $proportionStr',
-      );
+      expect(Formatter.formatInstant(instant1900, formatter: (f) => f.toString()), '2-3 $proportionStr');
 
-      expect(
-        Formatter.formatInstant(
-          Instant.ofEpoch(1900),
-          dayFormat: DayFormat.dayOnly,
-          daySeparator: '/',
-        ),
-        '3 3300',
-      );
-      expect(
-        Formatter.formatInstant(
-          Instant.ofEpoch(1900),
-          dayFormat: DayFormat.epoch,
-        ),
-        '7 3300',
-      );
+      expect(Formatter.formatInstant(Instant.ofEpoch(1900), dayFormat: DayFormat.dayOnly, daySeparator: '/'), '3 3300');
+      expect(Formatter.formatInstant(Instant.ofEpoch(1900), dayFormat: DayFormat.epoch), '7 3300');
       expect(Formatter.formatInstant(Instant.ofEpoch(1900)), '2-3 3300');
     });
 

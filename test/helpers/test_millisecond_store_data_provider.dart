@@ -66,19 +66,14 @@ class TestMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
 
   @override
   List<int> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) {
-    return [
-      300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000,
-      3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000,
-    ];
+    return [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000];
   }
 }
 
 /// Async wrapper around [TestMillisecondStoreDataProvider] for async load tests.
-class TestAsyncMillisecondStoreDataProvider
-    implements AsyncMillisecondStoreDataProvider {
-  TestAsyncMillisecondStoreDataProvider([
-    MillisecondStoreDataProvider? delegate,
-  ]) : _delegate = delegate ?? TestMillisecondStoreDataProvider();
+class TestAsyncMillisecondStoreDataProvider implements AsyncMillisecondStoreDataProvider {
+  TestAsyncMillisecondStoreDataProvider([MillisecondStoreDataProvider? delegate])
+    : _delegate = delegate ?? TestMillisecondStoreDataProvider();
 
   final MillisecondStoreDataProvider _delegate;
 
@@ -93,9 +88,7 @@ class TestAsyncMillisecondStoreDataProvider
   }
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(
-    List<int> yearEpochMilliseconds,
-  ) async {
+  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
     return _delegate.loadDayEpochMilliseconds(yearEpochMilliseconds);
   }
 }
@@ -108,12 +101,26 @@ class ConstantOffsetTestProvider implements MillisecondStoreDataProvider {
 
   final int offsetMilliseconds;
 
-  static final List<int> _years = [
-    1000, 2000, 3000, 4000, 4499, 4800, 5000, 40000,
-  ];
+  static final List<int> _years = [1000, 2000, 3000, 4000, 4499, 4800, 5000, 40000];
   static final List<int> _days = [
-    300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000,
-    3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000,
+    300,
+    600,
+    900,
+    1200,
+    1500,
+    1800,
+    2100,
+    2400,
+    2700,
+    3000,
+    3300,
+    3600,
+    3900,
+    4200,
+    4500,
+    4799,
+    4900,
+    39000,
   ];
 
   @override

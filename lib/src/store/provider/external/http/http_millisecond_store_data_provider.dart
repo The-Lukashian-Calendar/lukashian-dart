@@ -56,8 +56,7 @@ import 'package:lukashian/lukashian.dart';
 ///
 /// **Platform note:** uses `dart:io` and is only available on the Dart VM (not
 /// on web). The Java library uses the JDK HTTP client instead.
-class HttpMillisecondStoreDataProvider
-    extends ExternalResourceMillisecondStoreDataProvider {
+class HttpMillisecondStoreDataProvider extends ExternalResourceMillisecondStoreDataProvider {
   /// Same as [ExternalResourceMillisecondStoreDataProvider] constructor.
   HttpMillisecondStoreDataProvider(
     super.baseLocation,
@@ -68,25 +67,17 @@ class HttpMillisecondStoreDataProvider
 
   /// Same as [ExternalResourceMillisecondStoreDataProvider.withDefaults].
   // ignore: use_super_parameters — explicit forward matches original pattern.
-  HttpMillisecondStoreDataProvider.withDefaults(String baseLocation)
-    : super.withDefaults(baseLocation);
+  HttpMillisecondStoreDataProvider.withDefaults(String baseLocation) : super.withDefaults(baseLocation);
 
   @override
   Future<List<int>> loadMillisecondsByteArray(String url) async {
-    final client = HttpClient()
-      ..connectionTimeout = const Duration(seconds: 10);
+    final client = HttpClient()..connectionTimeout = const Duration(seconds: 10);
     try {
-      final request = await client
-          .getUrl(Uri.parse(url))
-          .timeout(const Duration(seconds: 10));
+      final request = await client.getUrl(Uri.parse(url)).timeout(const Duration(seconds: 10));
       request.headers.set('Accept', 'application/octet-stream');
-      final response = await request.close().timeout(
-        const Duration(seconds: 15),
-      );
+      final response = await request.close().timeout(const Duration(seconds: 15));
       if (response.statusCode != 200) {
-        throw HttpException(
-          'Expected response code 200, instead received response code ${response.statusCode}',
-        );
+        throw HttpException('Expected response code 200, instead received response code ${response.statusCode}');
       }
       final builder = BytesBuilder();
       await for (final chunk in response.timeout(const Duration(seconds: 15))) {

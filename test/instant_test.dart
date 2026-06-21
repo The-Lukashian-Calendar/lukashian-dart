@@ -57,15 +57,9 @@ void main() {
   setUpAll(() {
     final store = MillisecondStore.store();
     store.loadProvider(testCalendarKey, TestMillisecondStoreDataProvider());
-    store.loadProvider(
-      CalendarKeys.earth,
-      TestMillisecondStoreDataProvider(),
-    );
+    store.loadProvider(CalendarKeys.earth, TestMillisecondStoreDataProvider());
     store.loadProvider(_toCalendarSourceKey, ConstantOffsetTestProvider(0));
-    store.loadProvider(
-      _toCalendarTargetKey,
-      ConstantOffsetTestProvider(1000),
-    );
+    store.loadProvider(_toCalendarTargetKey, ConstantOffsetTestProvider(1000));
     store.setDefaultCalendarKey(testCalendarKey);
   });
 
@@ -92,41 +86,21 @@ void main() {
     });
 
     test('testMinusDays', () {
-      assertInstant(
-        150,
-        testCalendarKey,
-        Instant.ofEpoch(450, testCalendarKey).minusDays(1),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(450, testCalendarKey).minusDays(2),
-      );
+      assertInstant(150, testCalendarKey, Instant.ofEpoch(450, testCalendarKey).minusDays(1));
+      assertLukashianException(() => Instant.ofEpoch(450, testCalendarKey).minusDays(2));
     });
 
     test('testPlusDays', () {
-      assertInstant(
-        750,
-        testCalendarKey,
-        Instant.ofEpoch(450, testCalendarKey).plusDays(1),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(450, testCalendarKey).plusDays(17),
-      );
+      assertInstant(750, testCalendarKey, Instant.ofEpoch(450, testCalendarKey).plusDays(1));
+      assertLukashianException(() => Instant.ofEpoch(450, testCalendarKey).plusDays(17));
     });
 
     test('testAtPreviousDay', () {
-      assertInstant(
-        150,
-        testCalendarKey,
-        Instant.ofEpoch(450, testCalendarKey).atPreviousDay(),
-      );
+      assertInstant(150, testCalendarKey, Instant.ofEpoch(450, testCalendarKey).atPreviousDay());
     });
 
     test('testAtNextDay', () {
-      assertInstant(
-        750,
-        testCalendarKey,
-        Instant.ofEpoch(450, testCalendarKey).atNextDay(),
-      );
+      assertInstant(750, testCalendarKey, Instant.ofEpoch(450, testCalendarKey).atNextDay());
     });
 
     test('testMinusMilliseconds', () {
@@ -138,11 +112,7 @@ void main() {
     });
 
     test('testMinusSeconds', () {
-      assertInstant(
-        1000,
-        testCalendarKey,
-        Instant.ofEpoch(2000, testCalendarKey).minusSeconds(1),
-      );
+      assertInstant(1000, testCalendarKey, Instant.ofEpoch(2000, testCalendarKey).minusSeconds(1));
     });
 
     test('testPlusMilliseconds', () {
@@ -154,11 +124,7 @@ void main() {
     });
 
     test('testPlusSeconds', () {
-      assertInstant(
-        3000,
-        testCalendarKey,
-        Instant.ofEpoch(2000, testCalendarKey).plusSeconds(1),
-      );
+      assertInstant(3000, testCalendarKey, Instant.ofEpoch(2000, testCalendarKey).plusSeconds(1));
     });
 
     test('testMinusBeeps', () {
@@ -214,117 +180,31 @@ void main() {
     });
 
     test('testIsBefore', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isBefore(Instant.ofEpoch(2, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isBefore(Instant.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isBefore(Instant.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      assertLukashianException(
-        () =>
-            Instant.ofEpoch(1).isBefore(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isBefore(Instant.ofEpoch(2, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(1, testCalendarKey).isBefore(Instant.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(2, testCalendarKey).isBefore(Instant.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Instant.ofEpoch(1).isBefore(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrBefore', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrBefore(Instant.ofEpoch(2, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrBefore(Instant.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isSameOrBefore(Instant.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(
-          1,
-        ).isSameOrBefore(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isSameOrBefore(Instant.ofEpoch(2, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(1, testCalendarKey).isSameOrBefore(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(2, testCalendarKey).isSameOrBefore(Instant.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Instant.ofEpoch(1).isSameOrBefore(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsAfter', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isAfter(Instant.ofEpoch(2, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isAfter(Instant.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isAfter(Instant.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () =>
-            Instant.ofEpoch(1).isAfter(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isAfter(Instant.ofEpoch(2, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(1, testCalendarKey).isAfter(Instant.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(2, testCalendarKey).isAfter(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Instant.ofEpoch(1).isAfter(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrAfter', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrAfter(Instant.ofEpoch(2, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrAfter(Instant.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isSameOrAfter(Instant.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(
-          1,
-        ).isSameOrAfter(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isSameOrAfter(Instant.ofEpoch(2, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(1, testCalendarKey).isSameOrAfter(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(2, testCalendarKey).isSameOrAfter(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Instant.ofEpoch(1).isSameOrAfter(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsIn', () {
@@ -333,120 +213,34 @@ void main() {
       expect(Instant.ofEpoch(1000, testCalendarKey).isIn(Year.of(1)), isTrue);
       expect(Instant.ofEpoch(1001, testCalendarKey).isIn(Year.of(1)), isFalse);
       expect(Instant.ofEpoch(1500, testCalendarKey).isIn(Year.of(1)), isFalse);
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isIn(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          150,
-          testCalendarKey,
-        ).isIn(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          300,
-          testCalendarKey,
-        ).isIn(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          301,
-          testCalendarKey,
-        ).isIn(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          450,
-          testCalendarKey,
-        ).isIn(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(1).isIn(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(1).isIn(Year.of(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(150, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(300, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(301, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(450, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Instant.ofEpoch(1).isIn(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Instant.ofEpoch(1).isIn(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsNotIn', () {
-      expect(
-        Instant.ofEpoch(1, testCalendarKey).isNotIn(Year.of(1)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(500, testCalendarKey).isNotIn(Year.of(1)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(1000, testCalendarKey).isNotIn(Year.of(1)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(1001, testCalendarKey).isNotIn(Year.of(1)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(1500, testCalendarKey).isNotIn(Year.of(1)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(1, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          150,
-          testCalendarKey,
-        ).isNotIn(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          300,
-          testCalendarKey,
-        ).isNotIn(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(
-          301,
-          testCalendarKey,
-        ).isNotIn(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(
-          450,
-          testCalendarKey,
-        ).isNotIn(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(1).isNotIn(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(1).isNotIn(Year.of(2, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).isNotIn(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(500, testCalendarKey).isNotIn(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1000, testCalendarKey).isNotIn(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1001, testCalendarKey).isNotIn(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1500, testCalendarKey).isNotIn(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(150, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(300, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(301, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(450, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Instant.ofEpoch(1).isNotIn(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Instant.ofEpoch(1).isNotIn(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testGetEpochMilliseconds', () {
       expect(Instant.ofEpoch(1, testCalendarKey).getEpochMilliseconds(), 1);
-      expect(
-        Instant.ofEpoch(10000, testCalendarKey).getEpochMilliseconds(),
-        10000,
-      );
-      expect(
-        Instant.ofEpoch(39000, testCalendarKey).getEpochMilliseconds(),
-        39000,
-      );
+      expect(Instant.ofEpoch(10000, testCalendarKey).getEpochMilliseconds(), 10000);
+      expect(Instant.ofEpoch(39000, testCalendarKey).getEpochMilliseconds(), 39000);
     });
 
     test('testGetMillisecond', () {
@@ -456,221 +250,56 @@ void main() {
     });
 
     test('testGetDay', () {
-      assertDay(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(1, testCalendarKey).getDay(),
-      );
-      assertDay(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(150, testCalendarKey).getDay(),
-      );
-      assertDay(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(300, testCalendarKey).getDay(),
-      );
-      assertDay(
-        2,
-        testCalendarKey,
-        Instant.ofEpoch(301, testCalendarKey).getDay(),
-      );
-      assertDay(
-        15,
-        testCalendarKey,
-        Instant.ofEpoch(4498, testCalendarKey).getDay(),
-      );
-      assertDay(
-        15,
-        testCalendarKey,
-        Instant.ofEpoch(4499, testCalendarKey).getDay(),
-      );
-      assertDay(
-        15,
-        testCalendarKey,
-        Instant.ofEpoch(4500, testCalendarKey).getDay(),
-      );
-      assertDay(
-        16,
-        testCalendarKey,
-        Instant.ofEpoch(4501, testCalendarKey).getDay(),
-      );
-      assertDay(
-        16,
-        testCalendarKey,
-        Instant.ofEpoch(4798, testCalendarKey).getDay(),
-      );
-      assertDay(
-        16,
-        testCalendarKey,
-        Instant.ofEpoch(4799, testCalendarKey).getDay(),
-      );
-      assertDay(
-        17,
-        testCalendarKey,
-        Instant.ofEpoch(4800, testCalendarKey).getDay(),
-      );
-      assertDay(
-        17,
-        testCalendarKey,
-        Instant.ofEpoch(4801, testCalendarKey).getDay(),
-      );
-      assertDay(
-        17,
-        testCalendarKey,
-        Instant.ofEpoch(4899, testCalendarKey).getDay(),
-      );
-      assertDay(
-        17,
-        testCalendarKey,
-        Instant.ofEpoch(4900, testCalendarKey).getDay(),
-      );
-      assertDay(
-        18,
-        testCalendarKey,
-        Instant.ofEpoch(4901, testCalendarKey).getDay(),
-      );
-      assertDay(
-        18,
-        testCalendarKey,
-        Instant.ofEpoch(38999, testCalendarKey).getDay(),
-      );
-      assertDay(
-        18,
-        testCalendarKey,
-        Instant.ofEpoch(39000, testCalendarKey).getDay(),
-      );
+      assertDay(1, testCalendarKey, Instant.ofEpoch(1, testCalendarKey).getDay());
+      assertDay(1, testCalendarKey, Instant.ofEpoch(150, testCalendarKey).getDay());
+      assertDay(1, testCalendarKey, Instant.ofEpoch(300, testCalendarKey).getDay());
+      assertDay(2, testCalendarKey, Instant.ofEpoch(301, testCalendarKey).getDay());
+      assertDay(15, testCalendarKey, Instant.ofEpoch(4498, testCalendarKey).getDay());
+      assertDay(15, testCalendarKey, Instant.ofEpoch(4499, testCalendarKey).getDay());
+      assertDay(15, testCalendarKey, Instant.ofEpoch(4500, testCalendarKey).getDay());
+      assertDay(16, testCalendarKey, Instant.ofEpoch(4501, testCalendarKey).getDay());
+      assertDay(16, testCalendarKey, Instant.ofEpoch(4798, testCalendarKey).getDay());
+      assertDay(16, testCalendarKey, Instant.ofEpoch(4799, testCalendarKey).getDay());
+      assertDay(17, testCalendarKey, Instant.ofEpoch(4800, testCalendarKey).getDay());
+      assertDay(17, testCalendarKey, Instant.ofEpoch(4801, testCalendarKey).getDay());
+      assertDay(17, testCalendarKey, Instant.ofEpoch(4899, testCalendarKey).getDay());
+      assertDay(17, testCalendarKey, Instant.ofEpoch(4900, testCalendarKey).getDay());
+      assertDay(18, testCalendarKey, Instant.ofEpoch(4901, testCalendarKey).getDay());
+      assertDay(18, testCalendarKey, Instant.ofEpoch(38999, testCalendarKey).getDay());
+      assertDay(18, testCalendarKey, Instant.ofEpoch(39000, testCalendarKey).getDay());
     });
 
     test('testGetYear', () {
-      assertYear(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(1, testCalendarKey).getYear(),
-      );
-      assertYear(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(999, testCalendarKey).getYear(),
-      );
-      assertYear(
-        1,
-        testCalendarKey,
-        Instant.ofEpoch(1000, testCalendarKey).getYear(),
-      );
-      assertYear(
-        2,
-        testCalendarKey,
-        Instant.ofEpoch(1001, testCalendarKey).getYear(),
-      );
-      assertYear(
-        3,
-        testCalendarKey,
-        Instant.ofEpoch(2999, testCalendarKey).getYear(),
-      );
-      assertYear(
-        3,
-        testCalendarKey,
-        Instant.ofEpoch(3000, testCalendarKey).getYear(),
-      );
-      assertYear(
-        4,
-        testCalendarKey,
-        Instant.ofEpoch(3001, testCalendarKey).getYear(),
-      );
-      assertYear(
-        5,
-        testCalendarKey,
-        Instant.ofEpoch(4498, testCalendarKey).getYear(),
-      );
-      assertYear(
-        5,
-        testCalendarKey,
-        Instant.ofEpoch(4499, testCalendarKey).getYear(),
-      );
-      assertYear(
-        6,
-        testCalendarKey,
-        Instant.ofEpoch(4500, testCalendarKey).getYear(),
-      );
-      assertYear(
-        6,
-        testCalendarKey,
-        Instant.ofEpoch(4501, testCalendarKey).getYear(),
-      );
-      assertYear(
-        6,
-        testCalendarKey,
-        Instant.ofEpoch(4798, testCalendarKey).getYear(),
-      );
-      assertYear(
-        6,
-        testCalendarKey,
-        Instant.ofEpoch(4799, testCalendarKey).getYear(),
-      );
-      assertYear(
-        6,
-        testCalendarKey,
-        Instant.ofEpoch(4800, testCalendarKey).getYear(),
-      );
-      assertYear(
-        7,
-        testCalendarKey,
-        Instant.ofEpoch(4801, testCalendarKey).getYear(),
-      );
-      assertYear(
-        8,
-        testCalendarKey,
-        Instant.ofEpoch(38999, testCalendarKey).getYear(),
-      );
-      assertYear(
-        8,
-        testCalendarKey,
-        Instant.ofEpoch(39000, testCalendarKey).getYear(),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(39001, testCalendarKey).getYear(),
-      );
+      assertYear(1, testCalendarKey, Instant.ofEpoch(1, testCalendarKey).getYear());
+      assertYear(1, testCalendarKey, Instant.ofEpoch(999, testCalendarKey).getYear());
+      assertYear(1, testCalendarKey, Instant.ofEpoch(1000, testCalendarKey).getYear());
+      assertYear(2, testCalendarKey, Instant.ofEpoch(1001, testCalendarKey).getYear());
+      assertYear(3, testCalendarKey, Instant.ofEpoch(2999, testCalendarKey).getYear());
+      assertYear(3, testCalendarKey, Instant.ofEpoch(3000, testCalendarKey).getYear());
+      assertYear(4, testCalendarKey, Instant.ofEpoch(3001, testCalendarKey).getYear());
+      assertYear(5, testCalendarKey, Instant.ofEpoch(4498, testCalendarKey).getYear());
+      assertYear(5, testCalendarKey, Instant.ofEpoch(4499, testCalendarKey).getYear());
+      assertYear(6, testCalendarKey, Instant.ofEpoch(4500, testCalendarKey).getYear());
+      assertYear(6, testCalendarKey, Instant.ofEpoch(4501, testCalendarKey).getYear());
+      assertYear(6, testCalendarKey, Instant.ofEpoch(4798, testCalendarKey).getYear());
+      assertYear(6, testCalendarKey, Instant.ofEpoch(4799, testCalendarKey).getYear());
+      assertYear(6, testCalendarKey, Instant.ofEpoch(4800, testCalendarKey).getYear());
+      assertYear(7, testCalendarKey, Instant.ofEpoch(4801, testCalendarKey).getYear());
+      assertYear(8, testCalendarKey, Instant.ofEpoch(38999, testCalendarKey).getYear());
+      assertYear(8, testCalendarKey, Instant.ofEpoch(39000, testCalendarKey).getYear());
+      assertLukashianException(() => Instant.ofEpoch(39001, testCalendarKey).getYear());
     });
 
     test('testGetProportionOfDay', () {
-      expect(
-        Instant.ofEpoch(1, testCalendarKey).getProportionOfDay(),
-        Fraction(0, 1),
-      );
-      expect(
-        Instant.ofEpoch(151, testCalendarKey).getProportionOfDay(),
-        Fraction(5, 10),
-      );
-      expect(
-        Instant.ofEpoch(299, testCalendarKey).getProportionOfDay(),
-        Fraction(149, 150),
-      );
-      expect(
-        Instant.ofEpoch(300, testCalendarKey).getProportionOfDay(),
-        Fraction(299, 300),
-      );
-      expect(
-        Instant.ofEpoch(301, testCalendarKey).getProportionOfDay(),
-        Fraction(0, 1),
-      );
-      expect(
-        Instant.ofEpoch(451, testCalendarKey).getProportionOfDay(),
-        Fraction(5, 10),
-      );
-      expect(
-        Instant.ofEpoch(599, testCalendarKey).getProportionOfDay(),
-        Fraction(149, 150),
-      );
-      expect(
-        Instant.ofEpoch(600, testCalendarKey).getProportionOfDay(),
-        Fraction(299, 300),
-      );
-      expect(
-        Instant.ofEpoch(601, testCalendarKey).getProportionOfDay(),
-        Fraction(0, 1),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).getProportionOfDay(), Fraction(0, 1));
+      expect(Instant.ofEpoch(151, testCalendarKey).getProportionOfDay(), Fraction(5, 10));
+      expect(Instant.ofEpoch(299, testCalendarKey).getProportionOfDay(), Fraction(149, 150));
+      expect(Instant.ofEpoch(300, testCalendarKey).getProportionOfDay(), Fraction(299, 300));
+      expect(Instant.ofEpoch(301, testCalendarKey).getProportionOfDay(), Fraction(0, 1));
+      expect(Instant.ofEpoch(451, testCalendarKey).getProportionOfDay(), Fraction(5, 10));
+      expect(Instant.ofEpoch(599, testCalendarKey).getProportionOfDay(), Fraction(149, 150));
+      expect(Instant.ofEpoch(600, testCalendarKey).getProportionOfDay(), Fraction(299, 300));
+      expect(Instant.ofEpoch(601, testCalendarKey).getProportionOfDay(), Fraction(0, 1));
     });
 
     test('testGetBeeps', () {
@@ -687,308 +316,89 @@ void main() {
 
     test('testGetUnixEpochMilliseconds', () {
       final now = DateTime.now().millisecondsSinceEpoch;
-      expect(
-        Instant.ofUnixEpochMilliseconds(now).getUnixEpochMilliseconds(),
-        now,
-      );
+      expect(Instant.ofUnixEpochMilliseconds(now).getUnixEpochMilliseconds(), now);
     });
 
     test('testToDateTime', () {
       final now = DateTime.now().millisecondsSinceEpoch;
-      expect(
-        Instant.ofUnixEpochMilliseconds(
-          now,
-        ).toDateTime().millisecondsSinceEpoch,
-        now,
-      );
+      expect(Instant.ofUnixEpochMilliseconds(now).toDateTime().millisecondsSinceEpoch, now);
     });
 
     test('testToCalendar', () {
       final instant = Instant.ofEpoch(450, _toCalendarSourceKey);
       final converted = instant.toCalendar(_toCalendarTargetKey);
-      expect(
-        converted.getEpochMilliseconds() - instant.getEpochMilliseconds(),
-        1000,
-      );
+      expect(converted.getEpochMilliseconds() - instant.getEpochMilliseconds(), 1000);
       expect(converted.getCalendarKey(), _toCalendarTargetKey);
     });
 
     test('testDifferenceWith', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(1, testCalendarKey)),
-        0,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(2, testCalendarKey)),
-        -1,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(3, testCalendarKey)),
-        -2,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(4, testCalendarKey)),
-        -3,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(1, testCalendarKey)),
-        3,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(2, testCalendarKey)),
-        2,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(3, testCalendarKey)),
-        1,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(4, testCalendarKey)),
-        0,
+      expect(Instant.ofEpoch(1, testCalendarKey).differenceWith(Instant.ofEpoch(1, testCalendarKey)), 0);
+      expect(Instant.ofEpoch(1, testCalendarKey).differenceWith(Instant.ofEpoch(2, testCalendarKey)), -1);
+      expect(Instant.ofEpoch(1, testCalendarKey).differenceWith(Instant.ofEpoch(3, testCalendarKey)), -2);
+      expect(Instant.ofEpoch(1, testCalendarKey).differenceWith(Instant.ofEpoch(4, testCalendarKey)), -3);
+      expect(Instant.ofEpoch(4, testCalendarKey).differenceWith(Instant.ofEpoch(1, testCalendarKey)), 3);
+      expect(Instant.ofEpoch(4, testCalendarKey).differenceWith(Instant.ofEpoch(2, testCalendarKey)), 2);
+      expect(Instant.ofEpoch(4, testCalendarKey).differenceWith(Instant.ofEpoch(3, testCalendarKey)), 1);
+      expect(Instant.ofEpoch(4, testCalendarKey).differenceWith(Instant.ofEpoch(4, testCalendarKey)), 0);
+      assertLukashianException(
+        () => Instant.ofEpoch(4, testCalendarKey).differenceWith(Instant.ofEpoch(4, CalendarKeys.earth)),
       );
       assertLukashianException(
-        () => Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Instant.ofEpoch(4, CalendarKeys.earth)),
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceInBeepsWith(Instant.ofEpoch(4, CalendarKeys.earth)),
+        () => Instant.ofEpoch(4, testCalendarKey).differenceInBeepsWith(Instant.ofEpoch(4, CalendarKeys.earth)),
       );
     });
 
     test('testOf', () {
       assertLukashianException(() => Instant.ofEpoch(0, testCalendarKey));
-      assertLukashianException(
-        () => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(-1, 1)),
-      );
-      assertLukashianException(
-        () => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(1, 1)),
-      );
-      assertLukashianException(
-        () => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(2, 1)),
-      );
-      assertLukashianException(
-        () => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), -1),
-      );
-      assertLukashianException(
-        () => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 10000),
-      );
-      assertLukashianException(
-        () => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 20000),
-      );
+      assertLukashianException(() => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(-1, 1)));
+      assertLukashianException(() => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(1, 1)));
+      assertLukashianException(() => Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(2, 1)));
+      assertLukashianException(() => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), -1));
+      assertLukashianException(() => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 10000));
+      assertLukashianException(() => Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 20000));
 
-      assertInstant(
-        1,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(0, 1)),
-      );
-      assertInstant(
-        4,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(1, 100)),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(5, 10)),
-      );
-      assertInstant(
-        298,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(99, 100)),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Instant.of(
-          Day.ofEpoch(1, testCalendarKey),
-          Fraction(997, 1000),
-        ),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Instant.of(
-          Day.ofEpoch(1, testCalendarKey),
-          Fraction(999999999, 1000000000),
-        ),
-      );
+      assertInstant(1, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(0, 1)));
+      assertInstant(4, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(1, 100)));
+      assertInstant(151, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(5, 10)));
+      assertInstant(298, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(99, 100)));
+      assertInstant(300, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(997, 1000)));
+      assertInstant(300, testCalendarKey, Instant.of(Day.ofEpoch(1, testCalendarKey), Fraction(999999999, 1000000000)));
 
-      assertInstant(
-        1,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 0),
-      );
-      assertInstant(
-        4,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 100),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 5000),
-      );
-      assertInstant(
-        298,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9900),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9970),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9999),
-      );
+      assertInstant(1, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 0));
+      assertInstant(4, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 100));
+      assertInstant(151, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 5000));
+      assertInstant(298, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9900));
+      assertInstant(300, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9970));
+      assertInstant(300, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(1, testCalendarKey), 9999));
 
-      assertInstant(
-        301,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(0, 1)),
-      );
-      assertInstant(
-        304,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(1, 100)),
-      );
-      assertInstant(
-        451,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(5, 10)),
-      );
-      assertInstant(
-        598,
-        testCalendarKey,
-        Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(99, 100)),
-      );
-      assertInstant(
-        600,
-        testCalendarKey,
-        Instant.of(
-          Day.ofEpoch(2, testCalendarKey),
-          Fraction(997, 1000),
-        ),
-      );
-      assertInstant(
-        600,
-        testCalendarKey,
-        Instant.of(
-          Day.ofEpoch(2, testCalendarKey),
-          Fraction(999999999, 1000000000),
-        ),
-      );
+      assertInstant(301, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(0, 1)));
+      assertInstant(304, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(1, 100)));
+      assertInstant(451, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(5, 10)));
+      assertInstant(598, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(99, 100)));
+      assertInstant(600, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(997, 1000)));
+      assertInstant(600, testCalendarKey, Instant.of(Day.ofEpoch(2, testCalendarKey), Fraction(999999999, 1000000000)));
 
-      assertInstant(
-        301,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 0),
-      );
-      assertInstant(
-        304,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 100),
-      );
-      assertInstant(
-        451,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 5000),
-      );
-      assertInstant(
-        598,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9900),
-      );
-      assertInstant(
-        600,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9970),
-      );
-      assertInstant(
-        600,
-        testCalendarKey,
-        Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9999),
-      );
+      assertInstant(301, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 0));
+      assertInstant(304, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 100));
+      assertInstant(451, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 5000));
+      assertInstant(598, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9900));
+      assertInstant(600, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9970));
+      assertInstant(600, testCalendarKey, Instant.ofBeeps(Day.ofEpoch(2, testCalendarKey), 9999));
 
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.ofYearDay(Year.of(1), 1, Fraction(5, 10)),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.ofYearDayFraction(1, 1, Fraction(5, 10)),
-      );
+      assertInstant(151, testCalendarKey, Instant.ofYearDay(Year.of(1), 1, Fraction(5, 10)));
+      assertInstant(151, testCalendarKey, Instant.ofYearDayFraction(1, 1, Fraction(5, 10)));
 
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.ofYearDayBeeps(Year.of(1), 1, 5000),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Instant.ofYearDayBeepsKey(1, 1, 5000),
-      );
+      assertInstant(151, testCalendarKey, Instant.ofYearDayBeeps(Year.of(1), 1, 5000));
+      assertInstant(151, testCalendarKey, Instant.ofYearDayBeepsKey(1, 1, 5000));
 
-      assertInstant(
-        1,
-        CalendarKeys.earth,
-        Instant.ofEpoch(1, CalendarKeys.earth),
-      );
-      assertInstant(
-        1,
-        CalendarKeys.earth,
-        Instant.ofYearDayFraction(1, 1, Fraction(0, 1), CalendarKeys.earth),
-      );
-      assertInstant(
-        1,
-        CalendarKeys.earth,
-        Instant.ofYearDayBeepsKey(1, 1, 0, CalendarKeys.earth),
-      );
-      expect(
-        Instant.ofDateTime(DateTime.now(), CalendarKeys.earth).getCalendarKey(),
-        CalendarKeys.earth,
-      );
+      assertInstant(1, CalendarKeys.earth, Instant.ofEpoch(1, CalendarKeys.earth));
+      assertInstant(1, CalendarKeys.earth, Instant.ofYearDayFraction(1, 1, Fraction(0, 1), CalendarKeys.earth));
+      assertInstant(1, CalendarKeys.earth, Instant.ofYearDayBeepsKey(1, 1, 0, CalendarKeys.earth));
+      expect(Instant.ofDateTime(DateTime.now(), CalendarKeys.earth).getCalendarKey(), CalendarKeys.earth);
     });
 
     test('testOfUnixEpochMilliseconds', () {
-      expect(
-        Instant.ofUnixEpochMilliseconds(DateTime.now().millisecondsSinceEpoch),
-        isNotNull,
-      );
+      expect(Instant.ofUnixEpochMilliseconds(DateTime.now().millisecondsSinceEpoch), isNotNull);
     });
 
     test('testOfDateTime', () {
@@ -997,107 +407,31 @@ void main() {
 
     test('testNow', () {
       expect(Instant.now().getCalendarKey(), testCalendarKey);
-      expect(
-        Instant.now(CalendarKeys.earth).getCalendarKey(),
-        CalendarKeys.earth,
-      );
+      expect(Instant.now(CalendarKeys.earth).getCalendarKey(), CalendarKeys.earth);
     });
 
     test('testCompareTo', () {
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(1, testCalendarKey)),
-        0,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(2, testCalendarKey)),
-        -1,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(3, testCalendarKey)),
-        -1,
-      );
-      expect(
-        Instant.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(4, testCalendarKey)),
-        -1,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(1, testCalendarKey)),
-        1,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(2, testCalendarKey)),
-        1,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(3, testCalendarKey)),
-        1,
-      );
-      expect(
-        Instant.ofEpoch(
-          4,
-          testCalendarKey,
-        ).compareTo(Instant.ofEpoch(4, testCalendarKey)),
-        0,
-      );
-      assertLukashianException(
-        () => Instant.ofEpoch(
-          8,
-        ).compareTo(Instant.ofEpoch(4, CalendarKeys.earth)),
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey).compareTo(Instant.ofEpoch(1, testCalendarKey)), 0);
+      expect(Instant.ofEpoch(1, testCalendarKey).compareTo(Instant.ofEpoch(2, testCalendarKey)), -1);
+      expect(Instant.ofEpoch(1, testCalendarKey).compareTo(Instant.ofEpoch(3, testCalendarKey)), -1);
+      expect(Instant.ofEpoch(1, testCalendarKey).compareTo(Instant.ofEpoch(4, testCalendarKey)), -1);
+      expect(Instant.ofEpoch(4, testCalendarKey).compareTo(Instant.ofEpoch(1, testCalendarKey)), 1);
+      expect(Instant.ofEpoch(4, testCalendarKey).compareTo(Instant.ofEpoch(2, testCalendarKey)), 1);
+      expect(Instant.ofEpoch(4, testCalendarKey).compareTo(Instant.ofEpoch(3, testCalendarKey)), 1);
+      expect(Instant.ofEpoch(4, testCalendarKey).compareTo(Instant.ofEpoch(4, testCalendarKey)), 0);
+      assertLukashianException(() => Instant.ofEpoch(8).compareTo(Instant.ofEpoch(4, CalendarKeys.earth)));
     });
 
     test('testHashCode', () {
-      expect(
-        Instant.ofEpoch(2, testCalendarKey).hashCode,
-        Instant.ofEpoch(2, testCalendarKey).hashCode,
-      );
-      expect(
-        Instant.ofEpoch(2, testCalendarKey).hashCode,
-        isNot(Instant.ofEpoch(2, CalendarKeys.earth).hashCode),
-      );
-      expect(
-        Instant.ofEpoch(2, testCalendarKey).hashCode,
-        isNot(Instant.ofEpoch(3, testCalendarKey).hashCode),
-      );
+      expect(Instant.ofEpoch(2, testCalendarKey).hashCode, Instant.ofEpoch(2, testCalendarKey).hashCode);
+      expect(Instant.ofEpoch(2, testCalendarKey).hashCode, isNot(Instant.ofEpoch(2, CalendarKeys.earth).hashCode));
+      expect(Instant.ofEpoch(2, testCalendarKey).hashCode, isNot(Instant.ofEpoch(3, testCalendarKey).hashCode));
     });
 
     test('testEquals', () {
-      expect(
-        Instant.ofEpoch(1, testCalendarKey) ==
-            Instant.ofEpoch(1, testCalendarKey),
-        isTrue,
-      );
-      expect(
-        Instant.ofEpoch(1, testCalendarKey) ==
-            Instant.ofEpoch(1, CalendarKeys.earth),
-        isFalse,
-      );
-      expect(
-        Instant.ofEpoch(1, testCalendarKey) ==
-            Instant.ofEpoch(2, testCalendarKey),
-        isFalse,
-      );
+      expect(Instant.ofEpoch(1, testCalendarKey) == Instant.ofEpoch(1, testCalendarKey), isTrue);
+      expect(Instant.ofEpoch(1, testCalendarKey) == Instant.ofEpoch(1, CalendarKeys.earth), isFalse);
+      expect(Instant.ofEpoch(1, testCalendarKey) == Instant.ofEpoch(2, testCalendarKey), isFalse);
       expect(Instant.ofEpoch(1, testCalendarKey) == Year.of(1), isFalse);
       expect(
         Instant.ofYearDayFraction(1, 1, Fraction(600000000, 1000000000)) ==
@@ -1112,10 +446,7 @@ void main() {
     });
 
     test('testToString', () {
-      expect(
-        Instant.ofEpoch(2, testCalendarKey).toString(),
-        '[Instant: 1-1 0033]',
-      );
+      expect(Instant.ofEpoch(2, testCalendarKey).toString(), '[Instant: 1-1 0033]');
     });
   });
 }

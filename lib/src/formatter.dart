@@ -84,45 +84,31 @@ final class Formatter {
   /// not used.
   ///
   /// Throws [StateError] if [format] is null.
-  static String formatDay(
-    Day day,
-    DayFormat? format, [
-    String separator = '-',
-  ]) {
+  static String formatDay(Day day, DayFormat? format, [String separator = '-']) {
     if (format == null) throw StateError('DayFormat must not be null');
     switch (format) {
       case DayFormat.epoch:
         return day.getEpochDay().toString();
       case DayFormat.yearFirst:
-        return formatYear(day.getYear()) +
-            separator +
-            day.getDayNumber().toString();
+        return formatYear(day.getYear()) + separator + day.getDayNumber().toString();
       case DayFormat.dayFirst:
-        return day.getDayNumber().toString() +
-            separator +
-            formatYear(day.getYear());
+        return day.getDayNumber().toString() + separator + formatYear(day.getYear());
       case DayFormat.dayOnly:
         return day.getDayNumber().toString();
     }
   }
 
   /// Formats [day] with [DayFormat.yearFirst] and `'-'` as separator.
-  static String formatDayDefault(Day day) =>
-      formatDay(day, DayFormat.yearFirst);
+  static String formatDayDefault(Day day) => formatDay(day, DayFormat.yearFirst);
 
   /// Formats [proportionOfDay] using [formatter], or as four-digit beeps
   /// (0–9999) if [formatter] is null.
   ///
   /// For how the proportion maps to beeps, see [Instant.getBeeps]. Basis points:
   /// <https://en.wikipedia.org/wiki/Basis_point>.
-  static String formatProportion(
-    Fraction proportionOfDay, [
-    String Function(Fraction)? formatter,
-  ]) {
+  static String formatProportion(Fraction proportionOfDay, [String Function(Fraction)? formatter]) {
     if (formatter != null) return formatter(proportionOfDay);
-    final beeps = (proportionOfDay * Fraction(Instant.beepsPerDay, 1))
-        .toDouble()
-        .truncate();
+    final beeps = (proportionOfDay * Fraction(Instant.beepsPerDay, 1)).toDouble().truncate();
     return beeps.clamp(0, 9999).toString().padLeft(4, '0');
   }
 

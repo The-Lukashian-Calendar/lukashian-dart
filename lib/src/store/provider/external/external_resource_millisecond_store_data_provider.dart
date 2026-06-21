@@ -69,18 +69,15 @@ import 'package:lukashian/lukashian.dart';
 /// HTTP, etc.).
 ///
 /// See also [FileMillisecondStoreDataProvider], [HttpMillisecondStoreDataProvider].
-abstract class ExternalResourceMillisecondStoreDataProvider
-    implements AsyncMillisecondStoreDataProvider {
+abstract class ExternalResourceMillisecondStoreDataProvider implements AsyncMillisecondStoreDataProvider {
   /// Default extension for [loadUnixEpochOffsetMilliseconds] (one 8-byte value).
   static const String defaultUnixEpochOffsetExtension = 'unixEpochOffset';
 
   /// Default extension for [loadYearEpochMilliseconds].
-  static const String defaultYearEpochMillisecondsExtension =
-      'yearEpochMilliseconds';
+  static const String defaultYearEpochMillisecondsExtension = 'yearEpochMilliseconds';
 
   /// Default extension for [loadDayEpochMilliseconds].
-  static const String defaultDayEpochMillisecondsExtension =
-      'dayEpochMilliseconds';
+  static const String defaultDayEpochMillisecondsExtension = 'dayEpochMilliseconds';
 
   /// Creates a provider that loads from [baseLocation] with the given
   /// [unixEpochOffsetExtension], [yearEpochMillisecondsExtension], and
@@ -139,9 +136,7 @@ abstract class ExternalResourceMillisecondStoreDataProvider
   /// from year context. The parameter is present for [AsyncMillisecondStoreDataProvider]
   /// interface consistency (see also the Java implementation).
   @override
-  Future<List<int>> loadDayEpochMilliseconds(
-    List<int> yearEpochMilliseconds,
-  ) async {
+  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
     return _loadMilliseconds(dayEpochMillisecondsExtension);
   }
 
@@ -149,21 +144,15 @@ abstract class ExternalResourceMillisecondStoreDataProvider
     try {
       final bytes = await loadMillisecondsByteArray(baseLocation + extension);
       if (bytes.isEmpty) {
-        throw Exception(
-          "No bytes could be loaded from '$baseLocation$extension'",
-        );
+        throw Exception("No bytes could be loaded from '$baseLocation$extension'");
       }
       if (bytes.length % 8 != 0) {
-        throw ArgumentError(
-          'Number of bytes is not a multiple of 8, which is required for reading long values',
-        );
+        throw ArgumentError('Number of bytes is not a multiple of 8, which is required for reading long values');
       }
       return _decodeLongs(bytes);
     } catch (e, st) {
       Error.throwWithStackTrace(
-        Exception(
-          'Exception occurred during loading of milliseconds from External Resource: $e',
-        ),
+        Exception('Exception occurred during loading of milliseconds from External Resource: $e'),
         st,
       );
     }

@@ -68,12 +68,7 @@ void main(List<String> args) async {
       allowed: ['earth', 'mars'],
       defaultsTo: 'earth',
     )
-    ..addFlag(
-      'help',
-      abbr: 'h',
-      help: 'Show this help message',
-      negatable: false,
-    );
+    ..addFlag('help', abbr: 'h', help: 'Show this help message', negatable: false);
 
   try {
     final results = parser.parse(args);
@@ -84,15 +79,11 @@ void main(List<String> args) async {
     }
 
     final calendarArg = results['calendar'] as String;
-    final calendarKey = calendarArg == 'mars'
-        ? CalendarKeys.marsHttpLukashianOrg
-        : CalendarKeys.earthHttpLukashianOrg;
+    final calendarKey = calendarArg == 'mars' ? CalendarKeys.marsHttpLukashianOrg : CalendarKeys.earthHttpLukashianOrg;
 
     final rest = results.rest;
     if (rest.length > 1) {
-      throw FormatException(
-        'At most one ISO_DATE argument is allowed; received ${rest.length}: ${rest.join(' ')}',
-      );
+      throw FormatException('At most one ISO_DATE argument is allowed; received ${rest.length}: ${rest.join(' ')}');
     }
     final isoDate = rest.isEmpty ? null : rest[0];
 

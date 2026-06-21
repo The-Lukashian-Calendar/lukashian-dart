@@ -54,10 +54,7 @@ void main() {
   setUpAll(() {
     final store = MillisecondStore.store();
     store.loadProvider(testCalendarKey, TestMillisecondStoreDataProvider());
-    store.loadProvider(
-      CalendarKeys.earth,
-      TestMillisecondStoreDataProvider(),
-    );
+    store.loadProvider(CalendarKeys.earth, TestMillisecondStoreDataProvider());
     store.setDefaultCalendarKey(testCalendarKey);
   });
 
@@ -106,310 +103,99 @@ void main() {
     });
 
     test('testAtTime', () {
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(-1, 1)),
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(1, 1)),
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(2, 1)),
-      );
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(-1, 1)));
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(1, 1)));
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTime(Fraction(2, 1)));
 
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(-1),
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(10000),
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(20000),
-      );
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(-1));
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(10000));
+      assertLukashianException(() => Day.ofEpoch(1, testCalendarKey).atTimeBeeps(20000));
 
-      assertInstant(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTime(Fraction(0, 1)),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTime(Fraction(5, 10)),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTime(Fraction(999999999, 1000000000)),
-      );
+      assertInstant(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTime(Fraction(0, 1)));
+      assertInstant(151, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTime(Fraction(5, 10)));
+      assertInstant(300, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTime(Fraction(999999999, 1000000000)));
 
-      assertInstant(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTimeBeeps(0),
-      );
-      assertInstant(
-        151,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTimeBeeps(5000),
-      );
-      assertInstant(
-        300,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).atTimeBeeps(9999),
-      );
+      assertInstant(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTimeBeeps(0));
+      assertInstant(151, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTimeBeeps(5000));
+      assertInstant(300, testCalendarKey, Day.ofEpoch(1, testCalendarKey).atTimeBeeps(9999));
     });
 
     test('testFirstInstant', () {
-      assertInstant(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).firstInstant(),
-      );
-      assertInstant(
-        301,
-        testCalendarKey,
-        Day.ofEpoch(2, testCalendarKey).firstInstant(),
-      );
-      assertDay(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).firstInstant().getDay(),
-      );
-      assertDay(
-        2,
-        testCalendarKey,
-        Day.ofEpoch(2, testCalendarKey).firstInstant().getDay(),
-      );
+      assertInstant(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).firstInstant());
+      assertInstant(301, testCalendarKey, Day.ofEpoch(2, testCalendarKey).firstInstant());
+      assertDay(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).firstInstant().getDay());
+      assertDay(2, testCalendarKey, Day.ofEpoch(2, testCalendarKey).firstInstant().getDay());
     });
 
     test('testLastInstant', () {
-      assertInstant(
-        300,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).lastInstant(),
-      );
-      assertInstant(
-        600,
-        testCalendarKey,
-        Day.ofEpoch(2, testCalendarKey).lastInstant(),
-      );
-      assertDay(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).lastInstant().getDay(),
-      );
-      assertDay(
-        2,
-        testCalendarKey,
-        Day.ofEpoch(2, testCalendarKey).lastInstant().getDay(),
-      );
+      assertInstant(300, testCalendarKey, Day.ofEpoch(1, testCalendarKey).lastInstant());
+      assertInstant(600, testCalendarKey, Day.ofEpoch(2, testCalendarKey).lastInstant());
+      assertDay(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).lastInstant().getDay());
+      assertDay(2, testCalendarKey, Day.ofEpoch(2, testCalendarKey).lastInstant().getDay());
     });
 
     test('testIsBefore', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isBefore(Day.ofEpoch(2, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isBefore(Day.ofEpoch(5, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isBefore(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          5,
-          testCalendarKey,
-        ).isBefore(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isBefore(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1).isBefore(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).isBefore(Day.ofEpoch(2, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).isBefore(Day.ofEpoch(5, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(2, testCalendarKey).isBefore(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(5, testCalendarKey).isBefore(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(1, testCalendarKey).isBefore(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Day.ofEpoch(1).isBefore(Day.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrBefore', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrBefore(Day.ofEpoch(2, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrBefore(Day.ofEpoch(5, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          5,
-          testCalendarKey,
-        ).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1).isSameOrBefore(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).isSameOrBefore(Day.ofEpoch(2, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).isSameOrBefore(Day.ofEpoch(5, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(2, testCalendarKey).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(5, testCalendarKey).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(1, testCalendarKey).isSameOrBefore(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Day.ofEpoch(1).isSameOrBefore(Day.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsAfter', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isAfter(Day.ofEpoch(2, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isAfter(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isAfter(Day.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1).isAfter(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).isAfter(Day.ofEpoch(2, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(2, testCalendarKey).isAfter(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).isAfter(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Day.ofEpoch(1).isAfter(Day.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrAfter', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrAfter(Day.ofEpoch(2, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          2,
-          testCalendarKey,
-        ).isSameOrAfter(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).isSameOrAfter(Day.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1).isSameOrAfter(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).isSameOrAfter(Day.ofEpoch(2, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(2, testCalendarKey).isSameOrAfter(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).isSameOrAfter(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Day.ofEpoch(1).isSameOrAfter(Day.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testContains', () {
       final day = Day.ofEpoch(2, testCalendarKey);
       expect(day.contains(day.firstInstant()), isTrue);
       expect(day.contains(day.lastInstant()), isTrue);
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).contains(Instant.ofEpoch(1, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).contains(Instant.ofEpoch(300, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).contains(Instant.ofEpoch(301, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(
-          18,
-          testCalendarKey,
-        ).contains(Instant.ofEpoch(39000, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(1).contains(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).contains(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).contains(Instant.ofEpoch(300, testCalendarKey)), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey).contains(Instant.ofEpoch(301, testCalendarKey)), isFalse);
+      expect(Day.ofEpoch(18, testCalendarKey).contains(Instant.ofEpoch(39000, testCalendarKey)), isTrue);
+      assertLukashianException(() => Day.ofEpoch(1).contains(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testContainsNot', () {
       final day = Day.ofEpoch(2, testCalendarKey);
       expect(day.containsNot(day.firstInstant()), isFalse);
       expect(day.containsNot(day.lastInstant()), isFalse);
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).containsNot(Instant.ofEpoch(301, testCalendarKey)),
-        isTrue,
-      );
-      assertLukashianException(
-        () =>
-            Day.ofEpoch(1).containsNot(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).containsNot(Instant.ofEpoch(301, testCalendarKey)), isTrue);
+      assertLukashianException(() => Day.ofEpoch(1).containsNot(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testIsIn', () {
       expect(Day.ofEpoch(1, testCalendarKey).isIn(Year.of(1)), isTrue);
       expect(Day.ofEpoch(4, testCalendarKey).isIn(Year.of(1)), isTrue);
       expect(Day.ofEpoch(5, testCalendarKey).isIn(Year.of(1)), isFalse);
-      assertLukashianException(
-        () => Day.ofEpoch(1).isIn(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Day.ofEpoch(1).isIn(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsNotIn', () {
       expect(Day.ofEpoch(1, testCalendarKey).isNotIn(Year.of(1)), isFalse);
       expect(Day.ofEpoch(5, testCalendarKey).isNotIn(Year.of(1)), isTrue);
-      assertLukashianException(
-        () => Day.ofEpoch(1).isNotIn(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Day.ofEpoch(1).isNotIn(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testLengthInMilliseconds', () {
@@ -449,10 +235,7 @@ void main() {
         39000,
       ];
       for (var day = 1; day <= 18; day++) {
-        expect(
-          Day.ofEpoch(day, testCalendarKey).getEpochMilliseconds(),
-          expected[day - 1],
-        );
+        expect(Day.ofEpoch(day, testCalendarKey).getEpochMilliseconds(), expected[day - 1]);
       }
     });
 
@@ -478,10 +261,7 @@ void main() {
         4900,
       ];
       for (var day = 1; day <= 18; day++) {
-        expect(
-          Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsPreviousDay(),
-          expected[day - 1],
-        );
+        expect(Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsPreviousDay(), expected[day - 1]);
       }
     });
 
@@ -507,39 +287,20 @@ void main() {
         4901,
       ];
       for (var day = 1; day <= 18; day++) {
-        expect(
-          Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsAtStartOfDay(),
-          expected[day - 1],
-        );
+        expect(Day.ofEpoch(day, testCalendarKey).getEpochMillisecondsAtStartOfDay(), expected[day - 1]);
       }
     });
 
     test('testGetYear', () {
       assertYear(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).getYear());
       assertYear(2, testCalendarKey, Day.ofEpoch(5, testCalendarKey).getYear());
-      assertYear(
-        7,
-        testCalendarKey,
-        Day.ofEpoch(18, testCalendarKey).getYear(),
-      );
+      assertYear(7, testCalendarKey, Day.ofEpoch(18, testCalendarKey).getYear());
     });
 
     test('testGetEndYear', () {
-      assertYear(
-        1,
-        testCalendarKey,
-        Day.ofEpoch(1, testCalendarKey).getEndYear(),
-      );
-      assertYear(
-        2,
-        testCalendarKey,
-        Day.ofEpoch(4, testCalendarKey).getEndYear(),
-      );
-      assertYear(
-        8,
-        testCalendarKey,
-        Day.ofEpoch(18, testCalendarKey).getEndYear(),
-      );
+      assertYear(1, testCalendarKey, Day.ofEpoch(1, testCalendarKey).getEndYear());
+      assertYear(2, testCalendarKey, Day.ofEpoch(4, testCalendarKey).getEndYear());
+      assertYear(8, testCalendarKey, Day.ofEpoch(18, testCalendarKey).getEndYear());
     });
 
     test('testGetDayNumber', () {
@@ -552,32 +313,11 @@ void main() {
     });
 
     test('testDifferenceWith', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Day.ofEpoch(1, testCalendarKey)),
-        0,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).differenceWith(Day.ofEpoch(4, testCalendarKey)),
-        -3,
-      );
-      expect(
-        Day.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Day.ofEpoch(1, testCalendarKey)),
-        3,
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).differenceWith(Day.ofEpoch(1, testCalendarKey)), 0);
+      expect(Day.ofEpoch(1, testCalendarKey).differenceWith(Day.ofEpoch(4, testCalendarKey)), -3);
+      expect(Day.ofEpoch(4, testCalendarKey).differenceWith(Day.ofEpoch(1, testCalendarKey)), 3);
       assertLukashianException(
-        () => Day.ofEpoch(
-          4,
-          testCalendarKey,
-        ).differenceWith(Day.ofEpoch(4, CalendarKeys.earth)),
+        () => Day.ofEpoch(4, testCalendarKey).differenceWith(Day.ofEpoch(4, CalendarKeys.earth)),
       );
     });
 
@@ -596,56 +336,21 @@ void main() {
     });
 
     test('testCompareTo', () {
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Day.ofEpoch(1, testCalendarKey)),
-        0,
-      );
-      expect(
-        Day.ofEpoch(
-          1,
-          testCalendarKey,
-        ).compareTo(Day.ofEpoch(4, testCalendarKey)),
-        -3,
-      );
-      expect(
-        Day.ofEpoch(
-          4,
-          testCalendarKey,
-        ).compareTo(Day.ofEpoch(1, testCalendarKey)),
-        3,
-      );
-      assertLukashianException(
-        () => Day.ofEpoch(8).compareTo(Day.ofEpoch(4, CalendarKeys.earth)),
-      );
+      expect(Day.ofEpoch(1, testCalendarKey).compareTo(Day.ofEpoch(1, testCalendarKey)), 0);
+      expect(Day.ofEpoch(1, testCalendarKey).compareTo(Day.ofEpoch(4, testCalendarKey)), -3);
+      expect(Day.ofEpoch(4, testCalendarKey).compareTo(Day.ofEpoch(1, testCalendarKey)), 3);
+      assertLukashianException(() => Day.ofEpoch(8).compareTo(Day.ofEpoch(4, CalendarKeys.earth)));
     });
 
     test('testHashCode', () {
-      expect(
-        Day.ofEpoch(2, testCalendarKey).hashCode,
-        Day.ofEpoch(2, testCalendarKey).hashCode,
-      );
-      expect(
-        Day.ofEpoch(2, testCalendarKey).hashCode,
-        isNot(Day.ofEpoch(2, CalendarKeys.earth).hashCode),
-      );
+      expect(Day.ofEpoch(2, testCalendarKey).hashCode, Day.ofEpoch(2, testCalendarKey).hashCode);
+      expect(Day.ofEpoch(2, testCalendarKey).hashCode, isNot(Day.ofEpoch(2, CalendarKeys.earth).hashCode));
     });
 
     test('testEquals', () {
-      expect(
-        Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(1, testCalendarKey),
-        isTrue,
-      );
-      expect(
-        Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(1, CalendarKeys.earth),
-        isFalse,
-      );
-      expect(
-        Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(2, testCalendarKey),
-        isFalse,
-      );
+      expect(Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(1, testCalendarKey), isTrue);
+      expect(Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(1, CalendarKeys.earth), isFalse);
+      expect(Day.ofEpoch(1, testCalendarKey) == Day.ofEpoch(2, testCalendarKey), isFalse);
       expect(Day.ofEpoch(1, testCalendarKey) == Year.of(1), isFalse);
     });
 

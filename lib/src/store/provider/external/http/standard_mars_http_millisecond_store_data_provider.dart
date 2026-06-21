@@ -53,5 +53,5 @@ import 'http_millisecond_store_data_provider.dart';
 class StandardMarsHttpMillisecondStoreDataProvider extends HttpMillisecondStoreDataProvider {
   /// Uses `https://lukashian.org/millisecondstore/standardmars/` as base URL.
   StandardMarsHttpMillisecondStoreDataProvider()
-      : super.withDefaults('https://lukashian.org/millisecondstore/standardmars/');
+    : super.withDefaults('https://lukashian.org/millisecondstore/standardmars/');
 }

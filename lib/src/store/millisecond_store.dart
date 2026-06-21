@@ -120,10 +120,7 @@ final class MillisecondStore {
   /// The provider is not retained after loading. Concurrent calls for the same
   /// [key] share one in-flight load. Calling again after completion replaces
   /// the cached [MillisecondStoreData] for [key].
-  Future<void> loadAsyncProvider(
-    int key,
-    AsyncMillisecondStoreDataProvider provider,
-  ) async {
+  Future<void> loadAsyncProvider(int key, AsyncMillisecondStoreDataProvider provider) async {
     if (_data.containsKey(key)) {
       final generation = _bumpAsyncLoadGeneration(key);
       final data = await MillisecondStoreData.fromAsyncProvider(provider);
@@ -175,14 +172,8 @@ final class MillisecondStore {
   }
 
   Future<void> _initDefaults() async {
-    await loadAsyncProvider(
-      CalendarKeys.earthHttpLukashianOrg,
-      StandardEarthHttpMillisecondStoreDataProvider(),
-    );
-    await loadAsyncProvider(
-      CalendarKeys.marsHttpLukashianOrg,
-      StandardMarsHttpMillisecondStoreDataProvider(),
-    );
+    await loadAsyncProvider(CalendarKeys.earthHttpLukashianOrg, StandardEarthHttpMillisecondStoreDataProvider());
+    await loadAsyncProvider(CalendarKeys.marsHttpLukashianOrg, StandardMarsHttpMillisecondStoreDataProvider());
   }
 
   /// Returns cached [MillisecondStoreData] for [calendarKey].
@@ -205,8 +196,7 @@ final class MillisecondStore {
   void clearData(int key) {
     _invalidateAsyncLoad(key);
     _data.remove(key);
-    if (key == CalendarKeys.earthHttpLukashianOrg ||
-        key == CalendarKeys.marsHttpLukashianOrg) {
+    if (key == CalendarKeys.earthHttpLukashianOrg || key == CalendarKeys.marsHttpLukashianOrg) {
       _initFuture = null;
     }
   }

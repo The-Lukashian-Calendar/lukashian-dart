@@ -71,9 +71,7 @@ class MillisecondStoreData {
   ///
   /// Equivalent to the Java constructor
   /// `MillisecondStoreData(MillisecondStoreDataProvider)`.
-  factory MillisecondStoreData.fromProvider(
-    MillisecondStoreDataProvider provider,
-  ) {
+  factory MillisecondStoreData.fromProvider(MillisecondStoreDataProvider provider) {
     final yearMs = provider.loadYearEpochMilliseconds();
     return MillisecondStoreData._(
       unixEpochOffsetMilliseconds: provider.loadUnixEpochOffsetMilliseconds(),
@@ -83,13 +81,10 @@ class MillisecondStoreData {
   }
 
   /// Creates store data from an [AsyncMillisecondStoreDataProvider].
-  static Future<MillisecondStoreData> fromAsyncProvider(
-    AsyncMillisecondStoreDataProvider provider,
-  ) async {
+  static Future<MillisecondStoreData> fromAsyncProvider(AsyncMillisecondStoreDataProvider provider) async {
     final yearMs = await provider.loadYearEpochMilliseconds();
     return MillisecondStoreData._(
-      unixEpochOffsetMilliseconds:
-          await provider.loadUnixEpochOffsetMilliseconds(),
+      unixEpochOffsetMilliseconds: await provider.loadUnixEpochOffsetMilliseconds(),
       yearEpochMilliseconds: yearMs,
       dayEpochMilliseconds: await provider.loadDayEpochMilliseconds(yearMs),
     );
@@ -129,12 +124,8 @@ class MillisecondStoreData {
   /// Milliseconds from the UNIX epoch until the given Lukashian epoch
   /// milliseconds.
   int getUnixEpochMilliseconds(int lukashianEpochMilliseconds) {
-    final unixEpochMilliseconds =
-        lukashianEpochMilliseconds - _unixEpochOffsetMilliseconds;
-    final index = _binarySearch(
-      _unixTimestampsWithLeapSecond,
-      unixEpochMilliseconds,
-    );
+    final unixEpochMilliseconds = lukashianEpochMilliseconds - _unixEpochOffsetMilliseconds;
+    final index = _binarySearch(_unixTimestampsWithLeapSecond, unixEpochMilliseconds);
     final numberOfLeapSeconds = index >= 0 ? index + 1 : -index - 1;
     return unixEpochMilliseconds - (numberOfLeapSeconds * 1000);
   }
@@ -142,14 +133,9 @@ class MillisecondStoreData {
   /// Milliseconds from the start of the Lukashian calendar until the given
   /// UNIX epoch milliseconds.
   int getLukashianEpochMilliseconds(int unixEpochMilliseconds) {
-    final index = _binarySearch(
-      _unixTimestampsWithLeapSecond,
-      unixEpochMilliseconds,
-    );
+    final index = _binarySearch(_unixTimestampsWithLeapSecond, unixEpochMilliseconds);
     final numberOfLeapSeconds = index >= 0 ? index + 1 : -index - 1;
-    return unixEpochMilliseconds +
-        (numberOfLeapSeconds * 1000) +
-        _unixEpochOffsetMilliseconds;
+    return unixEpochMilliseconds + (numberOfLeapSeconds * 1000) + _unixEpochOffsetMilliseconds;
   }
 
   /// Milliseconds from the start of the Lukashian calendar until now.
@@ -162,14 +148,10 @@ class MillisecondStoreData {
   ///
   /// Throws [LukashianException] if [year] is out of range.
   int getEpochMillisecondsForYear(int year) {
-    LukashianException.check(
-      year >= 1,
-      () => '$year is not a valid year, the minimum is 1',
-    );
+    LukashianException.check(year >= 1, () => '$year is not a valid year, the minimum is 1');
     LukashianException.check(
       year <= _yearEpochMilliseconds.length,
-      () =>
-          'Year $year isn\'t supported yet by this Lukashian Calendar instance',
+      () => 'Year $year isn\'t supported yet by this Lukashian Calendar instance',
     );
     return _yearEpochMilliseconds[year - 1];
   }
@@ -179,14 +161,10 @@ class MillisecondStoreData {
   ///
   /// Throws [LukashianException] if [epochDay] is out of range.
   int getEpochMillisecondsForEpochDay(int epochDay) {
-    LukashianException.check(
-      epochDay >= 1,
-      () => '$epochDay is not a valid epoch day, the minimum is 1',
-    );
+    LukashianException.check(epochDay >= 1, () => '$epochDay is not a valid epoch day, the minimum is 1');
     LukashianException.check(
       epochDay <= _dayEpochMilliseconds.length,
-      () =>
-          'Epoch day $epochDay isn\'t supported yet by this Lukashian Calendar instance',
+      () => 'Epoch day $epochDay isn\'t supported yet by this Lukashian Calendar instance',
     );
     return _dayEpochMilliseconds[epochDay - 1];
   }
@@ -196,14 +174,10 @@ class MillisecondStoreData {
   ///
   /// Throws [LukashianException] if [epochMilliseconds] is out of range.
   int getYearForEpochMilliseconds(int epochMilliseconds) {
-    LukashianException.check(
-      epochMilliseconds >= 1,
-      () => '$epochMilliseconds is not valid, the minimum is 1',
-    );
+    LukashianException.check(epochMilliseconds >= 1, () => '$epochMilliseconds is not valid, the minimum is 1');
     LukashianException.check(
       epochMilliseconds <= _yearEpochMilliseconds.last,
-      () =>
-          'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
+      () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
     );
     final index = _binarySearch(_yearEpochMilliseconds, epochMilliseconds);
     return index >= 0 ? index + 1 : -index;
@@ -214,14 +188,10 @@ class MillisecondStoreData {
   ///
   /// Throws [LukashianException] if [epochMilliseconds] is out of range.
   int getEpochDayForEpochMilliseconds(int epochMilliseconds) {
-    LukashianException.check(
-      epochMilliseconds >= 1,
-      () => '$epochMilliseconds is not valid, the minimum is 1',
-    );
+    LukashianException.check(epochMilliseconds >= 1, () => '$epochMilliseconds is not valid, the minimum is 1');
     LukashianException.check(
       epochMilliseconds <= _dayEpochMilliseconds.last,
-      () =>
-          'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
+      () => 'Epoch millisecond $epochMilliseconds isn\'t supported yet by this Lukashian Calendar instance',
     );
     final index = _binarySearch(_dayEpochMilliseconds, epochMilliseconds);
     return index >= 0 ? index + 1 : -index;
@@ -275,8 +245,6 @@ class MillisecondStoreData {
       3644697600,
       3692217600,
     ];
-    return secondsSince1900WithLeapSecond
-        .map((s) => (s - 2208988800) * 1000)
-        .toList();
+    return secondsSince1900WithLeapSecond.map((s) => (s - 2208988800) * 1000).toList();
   }
 }

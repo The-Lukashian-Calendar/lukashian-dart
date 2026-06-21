@@ -53,5 +53,5 @@ import 'http_millisecond_store_data_provider.dart';
 class StandardEarthHttpMillisecondStoreDataProvider extends HttpMillisecondStoreDataProvider {
   /// Uses `https://lukashian.org/millisecondstore/standardearth/` as base URL.
   StandardEarthHttpMillisecondStoreDataProvider()
-      : super.withDefaults('https://lukashian.org/millisecondstore/standardearth/');
+    : super.withDefaults('https://lukashian.org/millisecondstore/standardearth/');
 }

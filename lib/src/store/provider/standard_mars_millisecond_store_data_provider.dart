@@ -55,8 +55,7 @@ import 'package:lukashian/lukashian.dart';
 /// Use [StandardMarsHttpMillisecondStoreDataProvider] with [MillisecondStore.init]
 /// to load data from lukashian.org, or provide your own
 /// [MillisecondStoreDataProvider].
-class StandardMarsMillisecondStoreDataProvider
-    implements MillisecondStoreDataProvider {
+class StandardMarsMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
   @override
   int loadUnixEpochOffsetMilliseconds() {
     throw UnimplementedError(
