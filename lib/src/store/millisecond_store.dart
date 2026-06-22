@@ -151,7 +151,7 @@ final class MillisecondStore {
       await future;
     } finally {
       if (identical(_asyncLoading[key], future)) {
-        _asyncLoading.remove(key);
+        await _asyncLoading.remove(key);
       }
     }
   }

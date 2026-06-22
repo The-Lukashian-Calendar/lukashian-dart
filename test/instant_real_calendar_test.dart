@@ -20,7 +20,6 @@ import 'helpers/test_millisecond_store_data_provider.dart';
 const int _earthKey = CalendarKeys.earthHttpLukashianOrg;
 const int _oneSecondBehindKey = 6;
 
-@Tags(['network'])
 void main() {
   final store = MillisecondStore.store();
 
