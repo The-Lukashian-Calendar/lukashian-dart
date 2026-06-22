@@ -80,3 +80,4 @@ coverage/
 dbcache/
 plans/
 convos/
+pubspec.lock
