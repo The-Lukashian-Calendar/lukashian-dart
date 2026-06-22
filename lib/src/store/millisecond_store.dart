@@ -47,28 +47,32 @@ import 'dart:async';
 
 import 'package:lukashian/lukashian.dart';
 
-/// Singleton that manages the various instances of the Lukashian Calendar. Each
-/// instance is implemented by a [MillisecondStoreDataProvider].
+/// Singleton that manages the various instances of the Lukashian Calendar.
 ///
 /// The int constants in [CalendarKeys] represent the instances supported by
-/// default. You can register your own [MillisecondStoreDataProvider] under a
-/// custom key.
+/// default. Load additional calendars with [loadProvider] or
+/// [loadAsyncProvider].
 ///
 /// The default calendar instance is used when [Year], [Day] and [Instant]
 /// methods do not specify a calendar key. By default the default is
 /// [CalendarKeys.earth]. You can change it with [setDefaultCalendarKey].
 ///
-/// Data is requested from a provider only when needed. In this Dart port, call
-/// [ensureLoaded] once per key before [data]; loaded data is cached in
-/// [MillisecondStoreData] so providers do not need to implement caching.
+/// Before using HTTP-backed calendars, call [init] once at application startup.
+/// Calendar data is loaded eagerly and cached in [MillisecondStoreData];
+/// providers are not retained after loading.
 ///
 /// In the Java API, `MillisecondStore.data(int)` and
 /// `MillisecondStore.defaultCalendarKey()` are static shortcuts on the
 /// singleton; in Dart use [store] and then instance methods.
 ///
-/// See also [MillisecondStoreData], [MillisecondStoreDataProvider].
+/// See also [MillisecondStoreData], [MillisecondStoreDataProvider],
+/// [AsyncMillisecondStoreDataProvider].
 final class MillisecondStore {
-  MillisecondStore._() : _defaultCalendarKey = CalendarKeys.earth;
+  MillisecondStore._() : _defaultCalendarKey = CalendarKeys.earth {
+    // Deferred until #33 (computation provider port):
+    // loadProvider(CalendarKeys.earth, StandardEarthMillisecondStoreDataProvider());
+    // loadProvider(CalendarKeys.mars, StandardMarsMillisecondStoreDataProvider());
+  }
 
   static final MillisecondStore _instance = MillisecondStore._();
 
@@ -76,9 +80,23 @@ final class MillisecondStore {
   static MillisecondStore store() => _instance;
 
   int _defaultCalendarKey;
-  final Map<int, MillisecondStoreDataProvider> _providers = {};
   final Map<int, MillisecondStoreData> _data = {};
-  final Map<int, Future<void>> _loading = {};
+  Future<void>? _initFuture;
+  final Map<int, Future<void>> _asyncLoading = {};
+  final Map<int, int> _asyncLoadGeneration = {};
+
+  /// Bumps the async-load generation for [key] and returns the new value.
+  int _bumpAsyncLoadGeneration(int key) {
+    final next = (_asyncLoadGeneration[key] ?? 0) + 1;
+    _asyncLoadGeneration[key] = next;
+    return next;
+  }
+
+  /// Invalidates in-flight async loads for [key].
+  void _invalidateAsyncLoad(int key) {
+    _bumpAsyncLoadGeneration(key);
+    _asyncLoading.remove(key);
+  }
 
   /// The default calendar key when no explicit key is provided.
   int getDefaultCalendarKey() => _defaultCalendarKey;
@@ -88,87 +106,108 @@ final class MillisecondStore {
     _defaultCalendarKey = key;
   }
 
-  /// Registers [provider] under [key].
+  /// Loads calendar data synchronously from [provider] under [key].
   ///
-  /// Do not overwrite the standard keys in [CalendarKeys] — other code may
-  /// depend on those constants.
-  ///
-  /// Registering also clears cached [MillisecondStoreData] for that key (see
-  /// [clearData]).
-  void registerProvider(int key, MillisecondStoreDataProvider provider) {
-    _providers[key] = provider;
-    clearData(key);
-    _loading.remove(key);
+  /// The provider is not retained after loading. Calling again replaces the
+  /// cached [MillisecondStoreData] for [key].
+  void loadProvider(int key, MillisecondStoreDataProvider provider) {
+    _invalidateAsyncLoad(key);
+    _data[key] = MillisecondStoreData.fromProvider(provider);
   }
 
-  /// Loads data for [calendarKey] from its provider if not already cached.
+  /// Loads calendar data asynchronously from [provider] under [key].
   ///
-  /// Concurrent calls for the same key share one in-flight load. Throws
-  /// [LukashianException] if no provider is registered for [calendarKey].
-  Future<void> ensureLoaded(int calendarKey) async {
-    if (_data.containsKey(calendarKey)) return;
-    final inFlight = _loading[calendarKey];
-    if (inFlight != null) return inFlight;
+  /// The provider is not retained after loading. Concurrent calls for the same
+  /// [key] share one in-flight load. Calling again after completion replaces
+  /// the cached [MillisecondStoreData] for [key].
+  Future<void> loadAsyncProvider(int key, AsyncMillisecondStoreDataProvider provider) async {
+    if (_data.containsKey(key)) {
+      final generation = _bumpAsyncLoadGeneration(key);
+      final data = await MillisecondStoreData.fromAsyncProvider(provider);
+      if (_asyncLoadGeneration[key] == generation) {
+        _data[key] = data;
+      }
+      return;
+    }
 
+    final inFlight = _asyncLoading[key];
+    if (inFlight != null) {
+      await inFlight;
+      if (_data.containsKey(key)) {
+        return;
+      }
+    }
+
+    final generation = _bumpAsyncLoadGeneration(key);
     final future = () async {
-      final provider = _providers[calendarKey];
-      LukashianException.check(
-        provider != null,
-        () =>
-            'Please register provider for key $calendarKey before calling this method with key $calendarKey',
-      );
-      final p = provider!;
-      final unixOffset = await p.loadUnixEpochOffsetMilliseconds();
-      final yearMs = await p.loadYearEpochMilliseconds();
-      final dayMs = await p.loadDayEpochMilliseconds(yearMs);
-      _data[calendarKey] = MillisecondStoreData(
-        unixEpochOffsetMilliseconds: unixOffset,
-        yearEpochMilliseconds: yearMs,
-        dayEpochMilliseconds: dayMs,
-      );
+      final data = await MillisecondStoreData.fromAsyncProvider(provider);
+      if (_asyncLoadGeneration[key] == generation) {
+        _data[key] = data;
+      }
     }();
 
-    _loading[calendarKey] = future;
+    _asyncLoading[key] = future;
     try {
       await future;
     } finally {
-      // This is safe because the future is already awaited above.
-      // ignore: unawaited_futures
-      _loading.remove(calendarKey);
+      if (identical(_asyncLoading[key], future)) {
+        await _asyncLoading.remove(key);
+      }
     }
+  }
+
+  /// Eagerly loads the default HTTP calendar data from lukashian.org.
+  ///
+  /// Loads [CalendarKeys.earthHttpLukashianOrg] and
+  /// [CalendarKeys.marsHttpLukashianOrg]. Concurrent calls share one
+  /// in-flight load. Safe to call multiple times.
+  Future<void> init() {
+    final existing = _initFuture;
+    if (existing != null) {
+      return existing;
+    }
+    final future = _initDefaults();
+    _initFuture = future;
+    return future;
+  }
+
+  Future<void> _initDefaults() async {
+    await loadAsyncProvider(CalendarKeys.earthHttpLukashianOrg, StandardEarthHttpMillisecondStoreDataProvider());
+    await loadAsyncProvider(CalendarKeys.marsHttpLukashianOrg, StandardMarsHttpMillisecondStoreDataProvider());
   }
 
   /// Returns cached [MillisecondStoreData] for [calendarKey].
   ///
-  /// Data is loaded from the provider only once (via [ensureLoaded]). Throws
-  /// [LukashianException] if no provider is registered for [calendarKey], or if
-  /// data has not been loaded yet.
+  /// Throws [LukashianException] if data has not been loaded yet. Call [init]
+  /// or [loadProvider] / [loadAsyncProvider] before use.
   MillisecondStoreData data(int calendarKey) {
-    final provider = _providers[calendarKey];
-    LukashianException.check(
-      provider != null,
-      () =>
-          'Please register provider for key $calendarKey before calling this method with key $calendarKey',
-    );
     final cached = _data[calendarKey];
     LukashianException.check(
       cached != null,
       () =>
-          'Data for key $calendarKey not loaded. Call ensureLoaded($calendarKey) first.',
+          'Data for key $calendarKey not loaded. Call init(), loadProvider($calendarKey, ...) or loadAsyncProvider($calendarKey, ...) first.',
     );
     return cached!;
   }
 
-  /// Clears cached data for [key] so the next [ensureLoaded] / [data] will
-  /// reload from the provider.
+  /// Clears cached data for [key].
+  ///
+  /// Reload by calling [loadProvider] or [loadAsyncProvider] again.
   void clearData(int key) {
+    _invalidateAsyncLoad(key);
     _data.remove(key);
+    if (key == CalendarKeys.earthHttpLukashianOrg || key == CalendarKeys.marsHttpLukashianOrg) {
+      _initFuture = null;
+    }
   }
 
-  /// Clears all cached [MillisecondStoreData] so data will be re-requested from
-  /// providers on next load.
+  /// Clears all cached [MillisecondStoreData].
   void clearAllData() {
+    for (final key in {..._asyncLoadGeneration.keys, ..._asyncLoading.keys}) {
+      _bumpAsyncLoadGeneration(key);
+    }
     _data.clear();
-    _loading.clear();
+    _initFuture = null;
+    _asyncLoading.clear();
   }
 }

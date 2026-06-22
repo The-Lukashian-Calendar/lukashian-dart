@@ -64,11 +64,7 @@ void assertDay(int expectedEpochDay, int expectedCalendarKey, Day actual) {
 }
 
 /// Asserts [actual] epoch milliseconds and calendar key.
-void assertInstant(
-  int expectedEpochMilliseconds,
-  int expectedCalendarKey,
-  Instant actual,
-) {
+void assertInstant(int expectedEpochMilliseconds, int expectedCalendarKey, Instant actual) {
   expect(actual.getEpochMilliseconds(), expectedEpochMilliseconds);
   expect(actual.getCalendarKey(), expectedCalendarKey);
 }

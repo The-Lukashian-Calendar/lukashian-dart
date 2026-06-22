@@ -2,13 +2,13 @@
 
 A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
 
-For more on the calendar itself, see [lukashian.org](https://www.lukashian.org).
+For more on the calendar itself, see [lukashian.org](https://www.lukashian.org). The canonical Java implementation and reference documentation live at [The-Lukashian-Calendar/lukashian](https://github.com/The-Lukashian-Calendar/lukashian). This port aims to map closely to the original java.
 
 ## Features
 
 - **Core types**: `Year`, `Day`, `Instant` (epoch-based, comparable, calendar-key aware)
 - **Formatting**: `Formatter` and `DayFormat` for years, days, instants and time-of-day (e.g. beeps)
-- **Multiple calendars**: Register and switch between Earth, Mars, or your own data via `MillisecondStore` and `MillisecondStoreDataProvider`
+- **Multiple calendars**: Load and switch between Earth, Mars, or your own data via `MillisecondStore`, `MillisecondStoreDataProvider`, and `AsyncMillisecondStoreDataProvider`
 - **External data**: Load calendar data from files or HTTP (including official [lukashian.org](https://www.lukashian.org) endpoints) using `FileMillisecondStoreDataProvider`, `HttpMillisecondStoreDataProvider`, `StandardEarthHttpMillisecondStoreDataProvider`, and `StandardMarsHttpMillisecondStoreDataProvider`
 
 ## Getting started
@@ -20,16 +20,15 @@ dependencies:
   lukashian: ^1.0.0
 ```
 
-Then ensure a calendar is loaded before using the default calendar. For example, register an HTTP provider and call `ensureLoaded`:
+Then call `init()` once at startup before using the default calendar:
 
 ```dart
 import 'package:lukashian/lukashian.dart';
 
 void main() async {
   final store = MillisecondStore.store();
-  store.registerProvider(CalendarKeys.earthHttpLukashianOrg, StandardEarthHttpMillisecondStoreDataProvider());
+  await store.init();
   store.setDefaultCalendarKey(CalendarKeys.earthHttpLukashianOrg);
-  await store.ensureLoaded(CalendarKeys.earthHttpLukashianOrg);
 
   final now = Instant.now();
   print(Formatter.formatInstant(now)); // e.g. "5919-43 3300"
@@ -76,25 +75,32 @@ Use a specific calendar key when creating values, or set the default:
 final onMars = Instant.now(CalendarKeys.marsHttpLukashianOrg);
 
 // Set default so all future now() / of() use that calendar
+await MillisecondStore.store().init();
 MillisecondStore.store().setDefaultCalendarKey(CalendarKeys.marsHttpLukashianOrg);
-await MillisecondStore.store().ensureLoaded(CalendarKeys.marsHttpLukashianOrg);
 ```
 
-Calendar keys: `CalendarKeys.earth`, `CalendarKeys.earthHttpLukashianOrg`, `CalendarKeys.mars`, `CalendarKeys.marsHttpLukashianOrg`. The `earth` and `mars` keys are for computed providers (stubs in this port throw `UnimplementedError`); use the `*HttpLukashianOrg` providers to load from lukashian.org.
+Calendar keys: `CalendarKeys.earth`, `CalendarKeys.earthHttpLukashianOrg`, `CalendarKeys.mars`, `CalendarKeys.marsHttpLukashianOrg`. The `earth` and `mars` keys are for computed providers (stubs in this port throw `UnimplementedError` until [#33](https://github.com/chris-NR/lukashian-dart/issues/33)); use `init()` to load the `*HttpLukashianOrg` calendars from lukashian.org.
 
 ### Loading from files or HTTP
 
 ```dart
-// Earth from lukashian.org
-store.registerProvider(CalendarKeys.earthHttpLukashianOrg, StandardEarthHttpMillisecondStoreDataProvider());
+final store = MillisecondStore.store();
 
-// Mars from lukashian.org
-store.registerProvider(CalendarKeys.marsHttpLukashianOrg, StandardMarsHttpMillisecondStoreDataProvider());
+// Default HTTP calendars (Earth and Mars from lukashian.org)
+await store.init();
 
 // Custom URL or local directory (base must end with / or path separator)
-store.registerProvider(99, HttpMillisecondStoreDataProvider.withDefaults('https://example.com/calendar/'));
-store.registerProvider(98, FileMillisecondStoreDataProvider.withDefaults('/path/to/calendar/'));
-await store.ensureLoaded(99);
+await store.loadAsyncProvider(
+  99,
+  HttpMillisecondStoreDataProvider.withDefaults('https://example.com/calendar/'),
+);
+await store.loadAsyncProvider(
+  98,
+  FileMillisecondStoreDataProvider.withDefaults('/path/to/calendar/'),
+);
+
+// Synchronous in-memory provider
+store.loadProvider(97, MyMillisecondStoreDataProvider());
 ```
 
 Binary format: 8 bytes per value, big-endian (same as the Java reference). Extensions default to `unixEpochOffset`, `yearEpochMilliseconds`, `dayEpochMilliseconds`.
@@ -130,15 +136,15 @@ Options: `-c` / `--calendar` (`earth` or `mars`), `-h` / `--help`. Optional posi
 This package mirrors [org.lukashian:lukashian](https://central.sonatype.com/artifact/org.lukashian/lukashian) (see the `lukashian` Java repo). Intentional differences:
 
 - **Instant type name**: Java uses `org.lukashian.Instant`; Dart exposes `Instant` so it does not clash with `dart:core` `DateTime`. (Some early docs said “LukashianInstant”; the type is `Instant`.)
-- **Async data loading**: Java `MillisecondStoreDataProvider` methods return values synchronously. In Dart they return `Future` so file/HTTP loading can await I/O. Call `MillisecondStore.ensureLoaded` before `MillisecondStore.data` for a key.
-- **MillisecondStore access**: Java offers static shortcuts `MillisecondStore.data(key)` and `MillisecondStore.defaultCalendarKey()` on the singleton. Dart uses `MillisecondStore.store()` and instance methods `data`, `getDefaultCalendarKey`, `setDefaultCalendarKey`.
+- **Eager loading and dual provider interfaces**: Java keeps providers in a map and lazily loads via `getData()`. Dart eagerly loads via `MillisecondStore.loadProvider` (sync) or `loadAsyncProvider` (async), stores only `MillisecondStoreData`, and does not retain providers. `MillisecondStoreDataProvider` matches Java (sync methods); async I/O uses `AsyncMillisecondStoreDataProvider`. Call `MillisecondStore.init()` at startup for default HTTP calendars.
+- **MillisecondStore access**: Java offers static shortcuts `MillisecondStore.data(key)` and `MillisecondStore.defaultCalendarKey()` on the singleton. Dart uses `MillisecondStore.store()` and instance methods `data`, `getDefaultCalendarKey`, `setDefaultCalendarKey`, `init`, `loadProvider`, and `loadAsyncProvider`.
 - **Fraction type**: Java uses Apache `BigFraction`; Dart uses `package:fraction` `Fraction`.
 - **Numeric types**: Java uses `long` for epoch milliseconds; Dart uses `int` (64-bit on the VM; be careful on web if values exceed JS safe integer range).
 - **Computed Earth/Mars providers**: Java fully implements `StandardEarthMillisecondStoreDataProvider` and `StandardMarsMillisecondStoreDataProvider`. The Dart port ships **stubs** that throw `UnimplementedError`; use `StandardEarthHttpMillisecondStoreDataProvider`, `StandardMarsHttpMillisecondStoreDataProvider`, or your own provider.
 - **HTTP client**: Java uses `java.net.http.HttpClient`. Dart uses `dart:io` `HttpClient`, so the HTTP providers are **VM-only**, not web.
 - **Interop**: Java provides `toJavaInstant()` / `ofJavaInstant`. Dart provides `Instant.toDateTime` / `Instant.ofDateTime` for UTC `DateTime`.
 - **Formatting API**: Java overloads `Formatter.format(...)`. Dart uses named methods such as `Formatter.formatYear`, `formatDay`, `formatInstant`.
-- **Combined predicates**: Some Java APIs use separate overloads (e.g. `Year.contains(Day)` vs `contains(Instant)`). Dart may use a single method taking a common supertype or `CalendarObject`; see dartdoc on the specific type.
+- **Combined predicates**: Java overloads membership methods (e.g. `Year.contains(Day)` vs `contains(Instant)`, `Instant.isIn(Year)` vs `isIn(Day)`). Dart uses suffixed names (`containsDay`, `containsInstant`, `isInYear`, `isInDay`, and their negations) because Dart has no method overloading. This preserves Java's compile-time type safety: invalid combinations such as `instant.isIn(anotherInstant)` are rejected by the analyzer.
 - **Serialization**: Java core types implement `java.io.Serializable`; Dart has no direct equivalent.
 
 API behavior is otherwise intended to match the Java library; where this port differs, prefer the dartdoc on each declaration.

@@ -43,6 +43,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+import 'package:lukashian/src/store/async_millisecond_store_data_provider.dart';
 import 'package:lukashian/src/store/millisecond_store_data_provider.dart';
 
 /// Test calendar key for unit tests.
@@ -54,18 +55,41 @@ const int testCalendarKey = 100;
 /// "Now" is at 1350 (via unix offset).
 class TestMillisecondStoreDataProvider implements MillisecondStoreDataProvider {
   @override
-  Future<int> loadUnixEpochOffsetMilliseconds() async {
+  int loadUnixEpochOffsetMilliseconds() {
     return 1350 - DateTime.now().millisecondsSinceEpoch;
   }
 
   @override
-  Future<List<int>> loadYearEpochMilliseconds() async {
+  List<int> loadYearEpochMilliseconds() {
     return [1000, 2000, 3000, 4000, 4499, 4800, 5000, 40000];
   }
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
+  List<int> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) {
     return [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000, 3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000];
+  }
+}
+
+/// Async wrapper around [TestMillisecondStoreDataProvider] for async load tests.
+class TestAsyncMillisecondStoreDataProvider implements AsyncMillisecondStoreDataProvider {
+  TestAsyncMillisecondStoreDataProvider([MillisecondStoreDataProvider? delegate])
+    : _delegate = delegate ?? TestMillisecondStoreDataProvider();
+
+  final MillisecondStoreDataProvider _delegate;
+
+  @override
+  Future<int> loadUnixEpochOffsetMilliseconds() async {
+    return _delegate.loadUnixEpochOffsetMilliseconds();
+  }
+
+  @override
+  Future<List<int>> loadYearEpochMilliseconds() async {
+    return _delegate.loadYearEpochMilliseconds();
+  }
+
+  @override
+  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async {
+    return _delegate.loadDayEpochMilliseconds(yearEpochMilliseconds);
   }
 }
 
@@ -79,17 +103,32 @@ class ConstantOffsetTestProvider implements MillisecondStoreDataProvider {
 
   static final List<int> _years = [1000, 2000, 3000, 4000, 4499, 4800, 5000, 40000];
   static final List<int> _days = [
-    300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2700, 3000,
-    3300, 3600, 3900, 4200, 4500, 4799, 4900, 39000,
+    300,
+    600,
+    900,
+    1200,
+    1500,
+    1800,
+    2100,
+    2400,
+    2700,
+    3000,
+    3300,
+    3600,
+    3900,
+    4200,
+    4500,
+    4799,
+    4900,
+    39000,
   ];
 
   @override
-  Future<int> loadUnixEpochOffsetMilliseconds() async => offsetMilliseconds;
+  int loadUnixEpochOffsetMilliseconds() => offsetMilliseconds;
 
   @override
-  Future<List<int>> loadYearEpochMilliseconds() async => _years;
+  List<int> loadYearEpochMilliseconds() => _years;
 
   @override
-  Future<List<int>> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) async =>
-      _days;
+  List<int> loadDayEpochMilliseconds(List<int> yearEpochMilliseconds) => _days;
 }

@@ -1,7 +1,46 @@
 /*
  * Copyright (c) 2018-2026 (5918-5926 in Lukashian years)
  * All rights reserved.
- * (License header abbreviated - same as Java.)
+ *
+ * The Lukashian Calendar and The Lukashian Calendar Mechanism are registered
+ * at the Benelux Office for Intellectual Property, registration number 120712.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, the above registration notice, this list of conditions
+ *    and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, the above registration notice, this list of conditions
+ *    and the following disclaimer in the documentation and/or other materials
+ *    provided with the distribution.
+ * 3. All materials mentioning features or use of this software,
+ *    the Lukashian Calendar or the underlying Lukashian Calendar Mechanism,
+ *    with or without modification, must refer to the Calendar as "The
+ *    Lukashian Calendar" and to the Calendar Mechanism as "The Lukashian
+ *    Calendar Mechanism".
+ * 4. Renaming of source code, binary form, the Lukashian Calendar or the
+ *    Lukashian Calendar Mechanism, with or without modification, is explicitly
+ *    disallowed.
+ * 5. Any copies, extracts, code excerpts, forks, redistributions
+ *    or translations into other languages of source code, binary form,
+ *    the functional behaviour of the Lukashian Calendar as defined by source code or
+ *    the functional behaviour of the Lukashian Calendar Mechanism as defined by source
+ *    code, with or without modification, may not include modifications that
+ *    change the functional behaviour of the Lukashian Calendar Mechanism as
+ *    implemented by source code.
+ *
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDER "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import 'package:lukashian/lukashian.dart';
@@ -11,16 +50,11 @@ import 'helpers/lukashian_assert.dart';
 import 'helpers/test_millisecond_store_data_provider.dart';
 
 void main() {
-  setUpAll(() async {
+  setUpAll(() {
     final store = MillisecondStore.store();
-    store.registerProvider(testCalendarKey, TestMillisecondStoreDataProvider());
-    store.registerProvider(
-      CalendarKeys.earth,
-      TestMillisecondStoreDataProvider(),
-    );
+    store.loadProvider(testCalendarKey, TestMillisecondStoreDataProvider());
+    store.loadProvider(CalendarKeys.earth, TestMillisecondStoreDataProvider());
     store.setDefaultCalendarKey(testCalendarKey);
-    await store.ensureLoaded(testCalendarKey);
-    await store.ensureLoaded(CalendarKeys.earth);
   });
 
   group('Year', () {
@@ -167,171 +201,86 @@ void main() {
       expect(Year.of(1).isBefore(Year.of(2)), isTrue);
       expect(Year.of(1).isBefore(Year.of(1)), isFalse);
       expect(Year.of(2).isBefore(Year.of(1)), isFalse);
-      assertLukashianException(
-        () => Year.of(1).isBefore(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).isBefore(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrBefore', () {
       expect(Year.of(1).isSameOrBefore(Year.of(2)), isTrue);
       expect(Year.of(1).isSameOrBefore(Year.of(1)), isTrue);
       expect(Year.of(2).isSameOrBefore(Year.of(1)), isFalse);
-      assertLukashianException(
-        () => Year.of(1).isSameOrBefore(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).isSameOrBefore(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsAfter', () {
       expect(Year.of(1).isAfter(Year.of(2)), isFalse);
       expect(Year.of(1).isAfter(Year.of(1)), isFalse);
       expect(Year.of(2).isAfter(Year.of(1)), isTrue);
-      assertLukashianException(
-        () => Year.of(1).isAfter(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).isAfter(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsSameOrAfter', () {
       expect(Year.of(1).isSameOrAfter(Year.of(2)), isFalse);
       expect(Year.of(1).isSameOrAfter(Year.of(1)), isTrue);
       expect(Year.of(2).isSameOrAfter(Year.of(1)), isTrue);
-      assertLukashianException(
-        () => Year.of(1).isSameOrAfter(Year.of(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).isSameOrAfter(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testContains', () {
       final year = Year.of(2);
 
-      expect(year.contains(year.firstInstant()), isTrue);
-      expect(year.contains(year.lastInstant()), isTrue);
+      expect(year.containsInstant(year.firstInstant()), isTrue);
+      expect(year.containsInstant(year.lastInstant()), isTrue);
 
-      expect(Year.of(1).contains(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(Year.of(1).contains(Day.ofEpoch(4, testCalendarKey)), isTrue);
-      expect(Year.of(1).contains(Day.ofEpoch(5, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsDay(Day.ofEpoch(4, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsDay(Day.ofEpoch(5, testCalendarKey)), isFalse);
 
-      expect(Year.of(1).contains(Instant.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(
-        Year.of(1).contains(Instant.ofEpoch(999, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(1).contains(Instant.ofEpoch(1000, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(1).contains(Instant.ofEpoch(1001, testCalendarKey)),
-        isFalse,
-      );
+      expect(Year.of(1).containsInstant(Instant.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsInstant(Instant.ofEpoch(999, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsInstant(Instant.ofEpoch(1000, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsInstant(Instant.ofEpoch(1001, testCalendarKey)), isFalse);
 
-      expect(
-        Year.of(3).contains(Instant.ofEpoch(2999, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(3).contains(Instant.ofEpoch(3000, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(3).contains(Instant.ofEpoch(3001, testCalendarKey)),
-        isFalse,
-      );
+      expect(Year.of(3).containsInstant(Instant.ofEpoch(2999, testCalendarKey)), isTrue);
+      expect(Year.of(3).containsInstant(Instant.ofEpoch(3000, testCalendarKey)), isTrue);
+      expect(Year.of(3).containsInstant(Instant.ofEpoch(3001, testCalendarKey)), isFalse);
 
-      expect(
-        Year.of(4).contains(Instant.ofEpoch(2999, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(4).contains(Instant.ofEpoch(3000, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(4).contains(Instant.ofEpoch(3001, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(4).contains(Instant.ofEpoch(4000, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(4).contains(Instant.ofEpoch(4001, testCalendarKey)),
-        isFalse,
-      );
+      expect(Year.of(4).containsInstant(Instant.ofEpoch(2999, testCalendarKey)), isFalse);
+      expect(Year.of(4).containsInstant(Instant.ofEpoch(3000, testCalendarKey)), isFalse);
+      expect(Year.of(4).containsInstant(Instant.ofEpoch(3001, testCalendarKey)), isTrue);
+      expect(Year.of(4).containsInstant(Instant.ofEpoch(4000, testCalendarKey)), isTrue);
+      expect(Year.of(4).containsInstant(Instant.ofEpoch(4001, testCalendarKey)), isFalse);
 
-      assertLukashianException(
-        () => Year.of(1).contains(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
-      assertLukashianException(
-        () => Year.of(1).contains(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).containsDay(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Year.of(1).containsInstant(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testContainsNot', () {
       final year = Year.of(2);
 
-      expect(year.containsNot(year.firstInstant()), isFalse);
-      expect(year.containsNot(year.lastInstant()), isFalse);
+      expect(year.containsNotInstant(year.firstInstant()), isFalse);
+      expect(year.containsNotInstant(year.lastInstant()), isFalse);
 
-      expect(Year.of(1).containsNot(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      expect(Year.of(1).containsNot(Day.ofEpoch(4, testCalendarKey)), isFalse);
-      expect(Year.of(1).containsNot(Day.ofEpoch(5, testCalendarKey)), isTrue);
+      expect(Year.of(1).containsNotDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsNotDay(Day.ofEpoch(4, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsNotDay(Day.ofEpoch(5, testCalendarKey)), isTrue);
 
-      expect(
-        Year.of(1).containsNot(Instant.ofEpoch(1, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(1).containsNot(Instant.ofEpoch(999, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(1).containsNot(Instant.ofEpoch(1000, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(1).containsNot(Instant.ofEpoch(1001, testCalendarKey)),
-        isTrue,
-      );
+      expect(Year.of(1).containsNotInstant(Instant.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsNotInstant(Instant.ofEpoch(999, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsNotInstant(Instant.ofEpoch(1000, testCalendarKey)), isFalse);
+      expect(Year.of(1).containsNotInstant(Instant.ofEpoch(1001, testCalendarKey)), isTrue);
 
-      expect(
-        Year.of(3).containsNot(Instant.ofEpoch(2999, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(3).containsNot(Instant.ofEpoch(3000, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(3).containsNot(Instant.ofEpoch(3001, testCalendarKey)),
-        isTrue,
-      );
+      expect(Year.of(3).containsNotInstant(Instant.ofEpoch(2999, testCalendarKey)), isFalse);
+      expect(Year.of(3).containsNotInstant(Instant.ofEpoch(3000, testCalendarKey)), isFalse);
+      expect(Year.of(3).containsNotInstant(Instant.ofEpoch(3001, testCalendarKey)), isTrue);
 
-      expect(
-        Year.of(4).containsNot(Instant.ofEpoch(2999, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(4).containsNot(Instant.ofEpoch(3000, testCalendarKey)),
-        isTrue,
-      );
-      expect(
-        Year.of(4).containsNot(Instant.ofEpoch(3001, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(4).containsNot(Instant.ofEpoch(4000, testCalendarKey)),
-        isFalse,
-      );
-      expect(
-        Year.of(4).containsNot(Instant.ofEpoch(4001, testCalendarKey)),
-        isTrue,
-      );
+      expect(Year.of(4).containsNotInstant(Instant.ofEpoch(2999, testCalendarKey)), isTrue);
+      expect(Year.of(4).containsNotInstant(Instant.ofEpoch(3000, testCalendarKey)), isTrue);
+      expect(Year.of(4).containsNotInstant(Instant.ofEpoch(3001, testCalendarKey)), isFalse);
+      expect(Year.of(4).containsNotInstant(Instant.ofEpoch(4000, testCalendarKey)), isFalse);
+      expect(Year.of(4).containsNotInstant(Instant.ofEpoch(4001, testCalendarKey)), isTrue);
 
-      assertLukashianException(
-        () => Year.of(1).containsNot(Day.ofEpoch(2, CalendarKeys.earth)),
-      );
-      assertLukashianException(
-        () => Year.of(1).containsNot(Instant.ofEpoch(2, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(1).containsNotDay(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Year.of(1).containsNotInstant(Instant.ofEpoch(2, CalendarKeys.earth)));
     });
 
     test('testLengthInMilliseconds', () {
@@ -402,9 +351,7 @@ void main() {
       expect(Year.of(4).differenceWith(Year.of(2)), 2);
       expect(Year.of(4).differenceWith(Year.of(3)), 1);
       expect(Year.of(4).differenceWith(Year.of(4)), 0);
-      assertLukashianException(
-        () => Year.of(8).differenceWith(Year.of(4, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(8).differenceWith(Year.of(4, CalendarKeys.earth)));
     });
 
     test('testNow', () {
@@ -421,43 +368,20 @@ void main() {
       expect(Year.of(4).compareTo(Year.of(2)), 2);
       expect(Year.of(4).compareTo(Year.of(3)), 1);
       expect(Year.of(4).compareTo(Year.of(4)), 0);
-      assertLukashianException(
-        () => Year.of(8).compareTo(Year.of(4, CalendarKeys.earth)),
-      );
+      assertLukashianException(() => Year.of(8).compareTo(Year.of(4, CalendarKeys.earth)));
     });
 
     test('testHashCode', () {
-      expect(
-        Year.of(2, testCalendarKey).hashCode,
-        Year.of(2, testCalendarKey).hashCode,
-      );
-      expect(
-        Year.of(2, testCalendarKey).hashCode,
-        isNot(Year.of(2, CalendarKeys.earth).hashCode),
-      );
-      expect(
-        Year.of(2, testCalendarKey).hashCode,
-        isNot(Year.of(3, testCalendarKey).hashCode),
-      );
+      expect(Year.of(2, testCalendarKey).hashCode, Year.of(2, testCalendarKey).hashCode);
+      expect(Year.of(2, testCalendarKey).hashCode, isNot(Year.of(2, CalendarKeys.earth).hashCode));
+      expect(Year.of(2, testCalendarKey).hashCode, isNot(Year.of(3, testCalendarKey).hashCode));
     });
 
     test('testEquals', () {
-      expect(
-        Year.of(1, testCalendarKey) == Year.of(1, testCalendarKey),
-        isTrue,
-      );
-      expect(
-        Year.of(1, testCalendarKey) == Year.of(1, CalendarKeys.earth),
-        isFalse,
-      );
-      expect(
-        Year.of(1, testCalendarKey) == Year.of(2, testCalendarKey),
-        isFalse,
-      );
-      expect(
-        Year.of(1, testCalendarKey) == Day.ofEpoch(1, testCalendarKey),
-        isFalse,
-      );
+      expect(Year.of(1, testCalendarKey) == Year.of(1, testCalendarKey), isTrue);
+      expect(Year.of(1, testCalendarKey) == Year.of(1, CalendarKeys.earth), isFalse);
+      expect(Year.of(1, testCalendarKey) == Year.of(2, testCalendarKey), isFalse);
+      expect(Year.of(1, testCalendarKey) == Day.ofEpoch(1, testCalendarKey), isFalse);
     });
 
     test('testToString', () {
