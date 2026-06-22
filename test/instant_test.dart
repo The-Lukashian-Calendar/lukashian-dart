@@ -208,33 +208,33 @@ void main() {
     });
 
     test('testIsIn', () {
-      expect(Instant.ofEpoch(1, testCalendarKey).isIn(Year.of(1)), isTrue);
-      expect(Instant.ofEpoch(500, testCalendarKey).isIn(Year.of(1)), isTrue);
-      expect(Instant.ofEpoch(1000, testCalendarKey).isIn(Year.of(1)), isTrue);
-      expect(Instant.ofEpoch(1001, testCalendarKey).isIn(Year.of(1)), isFalse);
-      expect(Instant.ofEpoch(1500, testCalendarKey).isIn(Year.of(1)), isFalse);
-      expect(Instant.ofEpoch(1, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(Instant.ofEpoch(150, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(Instant.ofEpoch(300, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(Instant.ofEpoch(301, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      expect(Instant.ofEpoch(450, testCalendarKey).isIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      assertLukashianException(() => Instant.ofEpoch(1).isIn(Day.ofEpoch(2, CalendarKeys.earth)));
-      assertLukashianException(() => Instant.ofEpoch(1).isIn(Year.of(2, CalendarKeys.earth)));
+      expect(Instant.ofEpoch(1, testCalendarKey).isInYear(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(500, testCalendarKey).isInYear(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1000, testCalendarKey).isInYear(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1001, testCalendarKey).isInYear(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1500, testCalendarKey).isInYear(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1, testCalendarKey).isInDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(150, testCalendarKey).isInDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(300, testCalendarKey).isInDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(301, testCalendarKey).isInDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(450, testCalendarKey).isInDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      assertLukashianException(() => Instant.ofEpoch(1).isInDay(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Instant.ofEpoch(1).isInYear(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testIsNotIn', () {
-      expect(Instant.ofEpoch(1, testCalendarKey).isNotIn(Year.of(1)), isFalse);
-      expect(Instant.ofEpoch(500, testCalendarKey).isNotIn(Year.of(1)), isFalse);
-      expect(Instant.ofEpoch(1000, testCalendarKey).isNotIn(Year.of(1)), isFalse);
-      expect(Instant.ofEpoch(1001, testCalendarKey).isNotIn(Year.of(1)), isTrue);
-      expect(Instant.ofEpoch(1500, testCalendarKey).isNotIn(Year.of(1)), isTrue);
-      expect(Instant.ofEpoch(1, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      expect(Instant.ofEpoch(150, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      expect(Instant.ofEpoch(300, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isFalse);
-      expect(Instant.ofEpoch(301, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      expect(Instant.ofEpoch(450, testCalendarKey).isNotIn(Day.ofEpoch(1, testCalendarKey)), isTrue);
-      assertLukashianException(() => Instant.ofEpoch(1).isNotIn(Day.ofEpoch(2, CalendarKeys.earth)));
-      assertLukashianException(() => Instant.ofEpoch(1).isNotIn(Year.of(2, CalendarKeys.earth)));
+      expect(Instant.ofEpoch(1, testCalendarKey).isNotInYear(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(500, testCalendarKey).isNotInYear(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1000, testCalendarKey).isNotInYear(Year.of(1)), isFalse);
+      expect(Instant.ofEpoch(1001, testCalendarKey).isNotInYear(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1500, testCalendarKey).isNotInYear(Year.of(1)), isTrue);
+      expect(Instant.ofEpoch(1, testCalendarKey).isNotInDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(150, testCalendarKey).isNotInDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(300, testCalendarKey).isNotInDay(Day.ofEpoch(1, testCalendarKey)), isFalse);
+      expect(Instant.ofEpoch(301, testCalendarKey).isNotInDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      expect(Instant.ofEpoch(450, testCalendarKey).isNotInDay(Day.ofEpoch(1, testCalendarKey)), isTrue);
+      assertLukashianException(() => Instant.ofEpoch(1).isNotInDay(Day.ofEpoch(2, CalendarKeys.earth)));
+      assertLukashianException(() => Instant.ofEpoch(1).isNotInYear(Year.of(2, CalendarKeys.earth)));
     });
 
     test('testGetEpochMilliseconds', () {

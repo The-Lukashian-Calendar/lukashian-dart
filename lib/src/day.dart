@@ -163,16 +163,16 @@ final class Day extends CalendarObject implements Comparable<Day> {
     return !contains(instant);
   }
 
-  /// Whether this day started in [year] (see [Year.contains]).
+  /// Whether this day started in [year] (see [Year.containsDay]).
   bool isIn(Year year) {
     checkSameKeyAs(year);
-    return year.contains(this);
+    return year.containsDay(this);
   }
 
   /// The negation of [isIn].
   bool isNotIn(Year year) {
     checkSameKeyAs(year);
-    return year.containsNot(this);
+    return year.containsNotDay(this);
   }
 
   /// Milliseconds from the start of this day through its final point.

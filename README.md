@@ -2,7 +2,7 @@
 
 A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
 
-For more on the calendar itself, see [lukashian.org](https://www.lukashian.org). The canonical Java implementation and reference documentation live at [The-Lukashian-Calendar/lukashian](https://github.com/The-Lukashian-Calendar/lukashian) and map closely to this Dart port.
+For more on the calendar itself, see [lukashian.org](https://www.lukashian.org). The canonical Java implementation and reference documentation live at [The-Lukashian-Calendar/lukashian](https://github.com/The-Lukashian-Calendar/lukashian). This port aims to map closely to the original java.
 
 ## Features
 
@@ -144,7 +144,7 @@ This package mirrors [org.lukashian:lukashian](https://central.sonatype.com/arti
 - **HTTP client**: Java uses `java.net.http.HttpClient`. Dart uses `dart:io` `HttpClient`, so the HTTP providers are **VM-only**, not web.
 - **Interop**: Java provides `toJavaInstant()` / `ofJavaInstant`. Dart provides `Instant.toDateTime` / `Instant.ofDateTime` for UTC `DateTime`.
 - **Formatting API**: Java overloads `Formatter.format(...)`. Dart uses named methods such as `Formatter.formatYear`, `formatDay`, `formatInstant`.
-- **Combined predicates**: Some Java APIs use separate overloads (e.g. `Year.contains(Day)` vs `contains(Instant)`). Dart may use a single method taking a common supertype or `CalendarObject`; see dartdoc on the specific type.
+- **Combined predicates**: Java overloads membership methods (e.g. `Year.contains(Day)` vs `contains(Instant)`, `Instant.isIn(Year)` vs `isIn(Day)`). Dart uses suffixed names (`containsDay`, `containsInstant`, `isInYear`, `isInDay`, and their negations) because Dart has no method overloading. This preserves Java's compile-time type safety: invalid combinations such as `instant.isIn(anotherInstant)` are rejected by the analyzer.
 - **Serialization**: Java core types implement `java.io.Serializable`; Dart has no direct equivalent.
 
 API behavior is otherwise intended to match the Java library; where this port differs, prefer the dartdoc on each declaration.

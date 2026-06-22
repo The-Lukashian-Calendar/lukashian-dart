@@ -141,30 +141,37 @@ final class Year extends CalendarObject implements Comparable<Year> {
     return _year >= other._year;
   }
 
-  /// Whether [other] lies in this year.
+  /// Whether [day] started in this year.
   ///
-  /// For a [Day], this is true if the day started in this year. For an
-  /// [Instant], the instant must fall between [getEpochMillisecondsAtStartOfYear]
-  /// and [getEpochMilliseconds] inclusive — note that the instant's [Day] may
-  /// still start in this year while the instant falls in the next year if that
-  /// day ends after the year ends.
-  ///
-  /// The Java API has separate `contains(Day)` and `contains(Instant)` methods;
-  /// Dart uses one [CalendarObject] parameter.
-  bool contains(CalendarObject other) {
-    checkSameKeyAs(other);
-    if (other is Day) return this == other.getYear();
-    if (other is Instant) {
-      final instantEpoch = other.getEpochMilliseconds();
-      return instantEpoch >= getEpochMillisecondsAtStartOfYear() && instantEpoch <= _epochMilliseconds;
-    }
-    return false;
+  /// Java overloads `contains(Day)`; Dart uses [containsDay] because Dart has no method overloading.
+  bool containsDay(Day day) {
+    checkSameKeyAs(day);
+    return this == day.getYear();
   }
 
-  /// The negation of [contains].
-  bool containsNot(CalendarObject other) {
-    checkSameKeyAs(other);
-    return !contains(other);
+  /// Whether [instant] lies in this year.
+  ///
+  /// The instant must fall between [getEpochMillisecondsAtStartOfYear] and[getEpochMilliseconds] inclusive
+  /// — note that the instant's [Day] may still start in this year while the instant falls in the next year if that day
+  /// ends after the year ends.
+  ///
+  /// Java overloads `contains(Instant)`; Dart uses [containsInstant] because Dart has no method overloading.
+  bool containsInstant(Instant instant) {
+    checkSameKeyAs(instant);
+    final instantEpoch = instant.getEpochMilliseconds();
+    return instantEpoch >= getEpochMillisecondsAtStartOfYear() && instantEpoch <= _epochMilliseconds;
+  }
+
+  /// Whether [day] did not start in this year.
+  bool containsNotDay(Day day) {
+    checkSameKeyAs(day);
+    return !containsDay(day);
+  }
+
+  /// Whether [instant] does not lie in this year.
+  bool containsNotInstant(Instant instant) {
+    checkSameKeyAs(instant);
+    return !containsInstant(instant);
   }
 
   /// Total milliseconds from the start of this year through its final point.

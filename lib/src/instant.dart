@@ -190,20 +190,32 @@ final class Instant extends CalendarObject implements Comparable<Instant> {
     return getEpochMilliseconds() >= other.getEpochMilliseconds();
   }
 
-  /// Whether this instant lies in [other] ([Year] or [Day]).
+  /// Whether this instant lies in [year].
   ///
-  /// The Java API has `isIn(Year)` and `isIn(Day)` separately.
-  bool isIn(CalendarObject other) {
-    checkSameKeyAs(other);
-    if (other is Year) return other.contains(this);
-    if (other is Day) return other.contains(this);
-    return false;
+  /// Java overloads `isIn(Year)`; Dart uses [isInYear] because Dart has no method overloading.
+  bool isInYear(Year year) {
+    checkSameKeyAs(year);
+    return year.containsInstant(this);
   }
 
-  /// The negation of [isIn].
-  bool isNotIn(CalendarObject other) {
-    checkSameKeyAs(other);
-    return !isIn(other);
+  /// Whether this instant lies in [day].
+  ///
+  /// Java overloads `isIn(Day)`; Dart uses [isInDay] because Dart has no method overloading.
+  bool isInDay(Day day) {
+    checkSameKeyAs(day);
+    return day.contains(this);
+  }
+
+  /// Whether this instant does not lie in [year].
+  bool isNotInYear(Year year) {
+    checkSameKeyAs(year);
+    return year.containsNotInstant(this);
+  }
+
+  /// Whether this instant does not lie in [day].
+  bool isNotInDay(Day day) {
+    checkSameKeyAs(day);
+    return day.containsNot(this);
   }
 
   /// The unique Lukashian timeline millisecond for this instant.
