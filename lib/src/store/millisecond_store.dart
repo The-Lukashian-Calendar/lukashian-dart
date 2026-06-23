@@ -55,7 +55,10 @@ import 'package:lukashian/lukashian.dart';
 ///
 /// The default calendar instance is used when [Year], [Day] and [Instant]
 /// methods do not specify a calendar key. By default the default is
-/// [CalendarKeys.earth]. You can change it with [setDefaultCalendarKey].
+/// [CalendarKeys.earthHttpLukashianOrg] until computed providers are ported
+/// ([#33](https://github.com/The-Lukashian-Calendar/lukashian-dart/issues/33)); then it will
+/// match Java as [CalendarKeys.earth]. You can change it with
+/// [setDefaultCalendarKey].
 ///
 /// Before using HTTP-backed calendars, call [init] once at application startup.
 /// Calendar data is loaded eagerly and cached in [MillisecondStoreData];
@@ -68,7 +71,7 @@ import 'package:lukashian/lukashian.dart';
 /// See also [MillisecondStoreData], [MillisecondStoreDataProvider],
 /// [AsyncMillisecondStoreDataProvider].
 final class MillisecondStore {
-  MillisecondStore._() : _defaultCalendarKey = CalendarKeys.earth {
+  MillisecondStore._() : _defaultCalendarKey = CalendarKeys.earthHttpLukashianOrg {
     // Deferred until #33 (computation provider port):
     // loadProvider(CalendarKeys.earth, StandardEarthMillisecondStoreDataProvider());
     // loadProvider(CalendarKeys.mars, StandardMarsMillisecondStoreDataProvider());

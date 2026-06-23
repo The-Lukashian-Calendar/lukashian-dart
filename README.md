@@ -26,9 +26,7 @@ Then call `init()` once at startup before using the default calendar:
 import 'package:lukashian/lukashian.dart';
 
 void main() async {
-  final store = MillisecondStore.store();
-  await store.init();
-  store.setDefaultCalendarKey(CalendarKeys.earthHttpLukashianOrg);
+  await MillisecondStore.store().init();
 
   final now = Instant.now();
   print(Formatter.formatInstant(now)); // e.g. "5919-43 3300"
