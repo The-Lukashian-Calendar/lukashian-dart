@@ -149,5 +149,5 @@ API behavior is otherwise intended to match the Java library; where this port di
 
 ## Additional information
 
-- The Lukashian Calendar and The Lukashian Calendar Mechanism are registered at the Benelux Office for Intellectual Property (registration number 120712). See the project license for redistribution and naming requirements.
+- See the project license for redistribution and naming requirements.
 - As an experiment in AI assisted software engineering this port was produced using the Cursor IDE. Claude Opus (4.6/7) was used for planning and Composer/'auto' were used for implementation. Code/PR reviews were performed by CodeRabbit.
