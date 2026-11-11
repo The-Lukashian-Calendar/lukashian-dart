@@ -1,6 +1,6 @@
 # lukashian
 
-A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is the calendar of choice for the upcoming Mars Settlement.
+A Dart port of **The Lukashian Calendar** — a calendar that is exceptionally simple, highly accurate and radically different. It provides a universal mechanism for every planet, moon or space station we'll ever inhabit and is perfect for the upcoming Mars Settlement.
 
 For more on the calendar itself, see [lukashian.org](https://www.lukashian.org). The canonical Java implementation and reference documentation live at [The-Lukashian-Calendar/lukashian](https://github.com/The-Lukashian-Calendar/lukashian). This port aims to map closely to the original java.
 
